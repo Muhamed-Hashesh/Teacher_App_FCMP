@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "450486584362",
+    "project_id": "classpalse",
+    "storage_bucket": "classpalse.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450486584362:android:8a78ba4cb4908675346f53",
+        "android_client_info": {
+          "package_name": "com.example.teacher_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_VvrMEvTANfoCzJ67mHsyer0hjTFsn3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
