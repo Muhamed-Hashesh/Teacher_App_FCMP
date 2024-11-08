@@ -88,6 +88,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
           // Sign out logic
           await AuthService().signOut();
           // Navigate to sign-in page
+          // ignore: use_build_context_synchronously
           Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
         },
       ),
@@ -281,7 +282,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
   Widget _buildSwitchTile(
       String title, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
-      thumbColor: MaterialStateProperty.all<Color>(Colors.white),
+      thumbColor: WidgetStateProperty.all<Color>(Colors.white),
       activeColor: const Color.fromARGB(255, 1, 151, 168),
       title: Text(title),
       value: value,
@@ -297,7 +298,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     Color? foregroundColor,
     bool fullWidth = true, // Added parameter
   }) {
-    return Container(
+    return SizedBox(
       width: fullWidth ? double.infinity : null, // Control the width
       child: ElevatedButton.icon(
         onPressed: onPressed ?? () {},

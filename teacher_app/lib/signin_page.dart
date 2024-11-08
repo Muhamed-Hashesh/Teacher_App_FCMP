@@ -5,10 +5,10 @@ class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
 
   @override
-  _SignInPageState createState() => _SignInPageState();
+  SignInPageState createState() => SignInPageState();
 }
 
-class _SignInPageState extends State<SignInPage> {
+class SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -25,6 +25,7 @@ class _SignInPageState extends State<SignInPage> {
         Navigator.pushReplacementNamed(context, '/myhomepage');
       } else {
         // Handle errors (you can use SnackBar or Dialog)
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign In failed. Please try again.')),
         );

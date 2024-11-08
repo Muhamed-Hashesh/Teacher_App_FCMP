@@ -4,10 +4,10 @@ class AskManually extends StatefulWidget {
   const AskManually({super.key});
 
   @override
-  _AskManuallyState createState() => _AskManuallyState();
+  AskManuallyState createState() => AskManuallyState();
 }
 
-class _AskManuallyState extends State<AskManually> {
+class AskManuallyState extends State<AskManually> {
   bool showTextFields = false;
 
   @override

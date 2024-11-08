@@ -137,10 +137,10 @@ class QuestionCardLiveExam extends StatefulWidget {
   final double screenHeight;
 
   const QuestionCardLiveExam({
-    Key? key,
+    super.key,
     required this.screenWidth,
     required this.screenHeight,    
-  }) : super(key: key);
+  });
 
   @override
   State<QuestionCardLiveExam> createState() => _QuestionCardLiveExamState();
@@ -367,11 +367,11 @@ class StudentGrid extends StatelessWidget {
   final double baseFontSize;
 
   const StudentGrid({
-    Key? key,
+    super.key,
     required this.screenWidth,
     required this.screenHeight,
     required this.baseFontSize,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

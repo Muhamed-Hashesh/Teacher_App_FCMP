@@ -11,14 +11,14 @@ class QuestionCard extends StatelessWidget {
   final VoidCallback onVisibilityToggle;
 
   const QuestionCard({
-    Key? key,
+    super.key,
     required this.index,
     required this.questionData,
     required this.isSelected,
     required this.isCorrectAnswerVisible,
     required this.onCheckboxChanged,
     required this.onVisibilityToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

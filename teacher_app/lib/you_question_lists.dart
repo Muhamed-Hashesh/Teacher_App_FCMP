@@ -15,7 +15,7 @@ import 'package:teacher_app/utils/quistions_ai.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 
 class YourQuestionListsPage extends StatefulWidget {
-  const YourQuestionListsPage({Key? key}) : super(key: key);
+  const YourQuestionListsPage({super.key});
 
   @override
   State<YourQuestionListsPage> createState() => _YourQuestionListsPageState();
@@ -32,10 +32,10 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
   List<Question> _questions = [];
 
   // Set to track which questions have their correct answers visible
-  Set<String> _visibleAnswers = {};
+  final Set<String> _visibleAnswers = {};
 
   // Set to track which questions are selected via checkboxes
-  Set<String> _selectedQuestions = {};
+  final Set<String> _selectedQuestions = {};
 
   // Initialize UUID generator
   final Uuid _uuid = Uuid();

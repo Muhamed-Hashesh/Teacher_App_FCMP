@@ -8,13 +8,13 @@ class ReusableDropdown extends StatelessWidget {
   final ValueChanged<String?>? onChanged;
 
   const ReusableDropdown({
-    Key? key,
+    super.key,
     required this.label,
     required this.hint,
     required this.items,
     this.selectedItem,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

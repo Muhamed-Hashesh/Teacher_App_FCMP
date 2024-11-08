@@ -7,11 +7,11 @@ class UploadedFilesDropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   const UploadedFilesDropdown({
-    Key? key,
+    super.key,
     required this.selectedItem,
     required this.items,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

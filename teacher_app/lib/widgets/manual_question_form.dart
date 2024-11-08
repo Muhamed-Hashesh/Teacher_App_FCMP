@@ -4,15 +4,15 @@ class ManualQuestionForm extends StatefulWidget {
   final String? selectedFileName;
 
   const ManualQuestionForm({
-    Key? key,
+    super.key,
     required this.selectedFileName,
-  }) : super(key: key);
+  });
 
   @override
-  _ManualQuestionFormState createState() => _ManualQuestionFormState();
+  ManualQuestionFormState createState() => ManualQuestionFormState();
 }
 
-class _ManualQuestionFormState extends State<ManualQuestionForm> {
+class ManualQuestionFormState extends State<ManualQuestionForm> {
   final _formKey = GlobalKey<FormState>();
   final _questionController = TextEditingController();
   final _answerController1 = TextEditingController();

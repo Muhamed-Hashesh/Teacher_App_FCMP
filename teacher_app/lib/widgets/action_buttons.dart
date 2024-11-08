@@ -6,10 +6,10 @@ class ActionButtons extends StatelessWidget {
   final VoidCallback onAddManually;
 
   const ActionButtons({
-    Key? key,
+    super.key,
     required this.onAddUsingAI,
     required this.onAddManually,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

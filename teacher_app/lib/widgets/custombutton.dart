@@ -9,14 +9,14 @@ class ReusableButton extends StatelessWidget {
   final FontWeight fontWeight;
 
   const ReusableButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
     this.backgroundColor = const Color.fromARGB(255, 1, 151, 168),
     this.textColor = Colors.white,
     this.fontSize = 16,
     this.fontWeight = FontWeight.bold,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

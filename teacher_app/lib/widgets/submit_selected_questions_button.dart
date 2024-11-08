@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class SubmitSelectedQuestionsButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const SubmitSelectedQuestionsButton({Key? key, required this.onPressed})
-      : super(key: key);
+  const SubmitSelectedQuestionsButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
