@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teacher_app/createsessionpage.dart';
+import 'package:teacher_app/features/create_session_page/presentation/views/createsessionpage.dart';
 import 'package:teacher_app/quiz_reports.dart';
 
 class MyHomePage extends StatefulWidget {

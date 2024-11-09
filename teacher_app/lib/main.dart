@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:teacher_app/createsessionpage.dart';
-import 'package:teacher_app/homepage.dart';
+import 'package:teacher_app/features/create_session_page/presentation/views/createsessionpage.dart';
+import 'package:teacher_app/features/home/presentation/views/homepage.dart';
 import 'auth_service.dart';
 import 'signin_page.dart';
 
