@@ -325,12 +325,15 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed:
-                          _currentIndex < _documents.length - 1 ? _showNextQuestion : null,
+                      onPressed: _currentIndex < _documents.length - 1
+                          ? _showNextQuestion
+                          : () => Navigator.pushReplacementNamed(context, '/resultsPage'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _currentIndex < _documents.length - 1
-                            ? const Color.fromARGB(255, 1, 151, 168)
-                            : Colors.grey,
+                        backgroundColor:
+                        // _currentIndex < _documents.length - 1 ?
+                        const Color.fromARGB(255, 1, 151, 168)
+                            // : Colors.grey
+            ,
                         padding: EdgeInsets.all(widget.screenHeight * 0.05),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -339,7 +342,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                       child: Row(
                         children: [
                           Text(
-                            "Next",
+                            _currentIndex < _documents.length - 1 ? "Next" : "End Quiz",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: baseFontSize * 2,
