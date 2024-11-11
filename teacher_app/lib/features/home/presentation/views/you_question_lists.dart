@@ -9,7 +9,7 @@ import 'package:teacher_app/widgets/custombutton.dart';
 import 'package:teacher_app/widgets/upload_file_button.dart';
 import 'package:teacher_app/widgets/action_buttons.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
-import 'features/quiz/presentation/views/live_exam.dart'; // Replace with the correct path to your LiveExam widget
+import '../../../quiz/presentation/views/live_exam.dart'; // Replace with the correct path to your LiveExam widget
 import 'package:uuid/uuid.dart'; // For generating unique IDs
 import 'package:teacher_app/utils/quistions_ai.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';

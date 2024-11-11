@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:teacher_app/ask_manually.dart';
-import 'package:teacher_app/auth_service.dart';
-import 'package:teacher_app/generate_ai.dart';
-import 'package:teacher_app/questionbank.dart';
-import 'package:teacher_app/you_question_lists.dart'; // Import the GeneratePage
+import 'package:teacher_app/features/home/presentation/views/ask_manually.dart';
+import 'package:teacher_app/features/auth/data/auth_service.dart';
+import 'package:teacher_app/features/home/presentation/views/generate_ai.dart';
+import 'package:teacher_app/features/home/presentation/views/questionbank.dart';
+import 'package:teacher_app/features/home/presentation/views/you_question_lists.dart'; // Import the GeneratePage
 
 class CreateSessionPage extends StatefulWidget {
   const CreateSessionPage({super.key});

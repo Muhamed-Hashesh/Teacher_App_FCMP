@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:teacher_app/features/quiz/presentation/views/display_mac&grade.dart';
 import 'package:teacher_app/features/create_session_page/presentation/views/createsessionpage.dart';
 import 'package:teacher_app/features/home/presentation/views/homepage.dart';
-import 'auth_service.dart';
-import 'signin_page.dart';
+import 'features/auth/data/auth_service.dart';
+import 'features/auth/presentation/views/signin_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
