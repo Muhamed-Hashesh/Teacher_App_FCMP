@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teacher_app/live_exam.dart';
+import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 import 'package:teacher_app/widgets/customdropdown.dart';
 import 'package:teacher_app/utils/quistions_ai.dart';
