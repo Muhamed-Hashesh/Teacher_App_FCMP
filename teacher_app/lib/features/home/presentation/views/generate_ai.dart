@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
-import 'package:teacher_app/utils/quistions_ai.dart';
+import 'package:teacher_app/question_generator.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
+
 
 class GeneratePage extends StatefulWidget {
   const GeneratePage({super.key});
@@ -16,6 +17,41 @@ class GeneratePageState extends State<GeneratePage> {
   final List<bool> _isCorrectAnswerVisible = [];
   bool generateQuestions = false;
   bool isGenerateMoreQuestions = false;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> questions_AI = [];
+  String _subject = '';
+
+  Future<void> _fetchQuestions() async {
+    if (_subject.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a subject')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      questions_AI = [];
+    });
+
+    try {
+      List<Map<String, dynamic>> questions =
+      await QuestionGenerator.generateQuestions(_subject);
+      setState(() {
+        questions_AI = questions;
+        generateQuestions = true;
+        isGenerateMoreQuestions = false;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error generating questions')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +114,9 @@ class GeneratePageState extends State<GeneratePage> {
                     ),
                     border: InputBorder.none,
                   ),
+                  onChanged: (value) {
+                    _subject = value;
+                  },
                 ),
               ),
             ),
@@ -86,12 +125,7 @@ class GeneratePageState extends State<GeneratePage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      generateQuestions = !generateQuestions;
-                      isGenerateMoreQuestions = false;
-                    });
-                  },
+                  onPressed: _isLoading ? null : _fetchQuestions,
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: verticalPadding),
                     backgroundColor: const Color.fromARGB(255, 1, 151, 168),
@@ -99,7 +133,9 @@ class GeneratePageState extends State<GeneratePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
                     "Generate Questions Using AI",
                     style: TextStyle(
                       color: Colors.white,
@@ -111,15 +147,14 @@ class GeneratePageState extends State<GeneratePage> {
               ),
             ),
             SizedBox(height: verticalPadding * 2),
-
             if (generateQuestions)
-              ...List.generate(aiQuestionsList.length, (index) {
-                final question = aiQuestionsList[index];
+              ...List.generate(questions_AI.length, (index) {
+                final question = questions_AI[index];
                 final options = question['options'] as List<String>;
                 return AiGeneratedQuestion(
                   question: question['question'],
                   options: options,
-                  correctAnswer: question['correctAnswer'],
+                  correctAnswer: question['answer'],
                   questionNumber: index,
                   selectedListItem: question['selected'],
                   onSelectionChanged: (bool isSelected) {
@@ -130,23 +165,8 @@ class GeneratePageState extends State<GeneratePage> {
                 );
               }),
 
-            if (isGenerateMoreQuestions)
-              ...aiQuestionsList
-                  .where((question) => question['selected'] == true)
-                  .map((question) {
-                final options = question['options'] as List<String>;
-                return AiGeneratedQuestion(
-                  question: question['question'],
-                  options: options,
-                  correctAnswer: question['correctAnswer'],
-                  questionNumber: aiQuestionsList.indexOf(question),
-                  selectedListItem: question['selected'],
-                  onSelectionChanged: (bool value) {},
-                );
-              }),
             Row(
               children: [
-                // Wrap buttons with Expanded to ensure they share available space
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -154,7 +174,6 @@ class GeneratePageState extends State<GeneratePage> {
                         generateQuestions = false;
                         isGenerateMoreQuestions = true;
                       });
-                      // Handle Generate more questions action
                     },
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
@@ -182,14 +201,12 @@ class GeneratePageState extends State<GeneratePage> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Handle Ask Manually action
                       final questionData =
-                          await showDialog<Map<String, dynamic>>(
+                      await showDialog<Map<String, dynamic>>(
                         context: context,
                         builder: (BuildContext context) {
-                          return ManualQuestionForm(
-                            selectedFileName:
-                                '', // Pass any required parameters
+                          return const ManualQuestionForm(
+                            selectedFileName: '',
                           );
                         },
                       );
@@ -197,8 +214,7 @@ class GeneratePageState extends State<GeneratePage> {
                       if (questionData != null) {
                         setState(() {
                           _manuallyAddedQuestions.add(questionData);
-                          _isCorrectAnswerVisible
-                              .add(false); // Initialize visibility to false
+                          _isCorrectAnswerVisible.add(false);
                         });
                       }
                     },
@@ -227,12 +243,24 @@ class GeneratePageState extends State<GeneratePage> {
               ],
             ),
             SizedBox(height: verticalPadding * 2),
-            // Start Quiz Button
+            if (isGenerateMoreQuestions)
+              ...questions_AI
+                  .where((question) => question['selected'] == true)
+                  .map((question) {
+                final options = question['options'] as List<String>;
+                return AiGeneratedQuestion(
+                  question: question['question'],
+                  options: options,
+                  correctAnswer: question['answer'],
+                  questionNumber: questions_AI.indexOf(question),
+                  selectedListItem: question['selected'],
+                  onSelectionChanged: (bool value) {},
+                );
+              }).toList(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Navigate to LiveExam page
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -257,7 +285,6 @@ class GeneratePageState extends State<GeneratePage> {
                 ),
               ),
             ),
-            // Display manually added questions as cards
             if (_manuallyAddedQuestions.isNotEmpty) ...[
               SizedBox(height: verticalPadding * 2),
               Text(
@@ -282,7 +309,7 @@ class GeneratePageState extends State<GeneratePage> {
                     onVisibilityToggle: () {
                       setState(() {
                         _isCorrectAnswerVisible[index] =
-                            !_isCorrectAnswerVisible[index];
+                        !_isCorrectAnswerVisible[index];
                       });
                     },
                   );
@@ -295,6 +322,7 @@ class GeneratePageState extends State<GeneratePage> {
     );
   }
 }
+
 
 class QuestionCardgeneratingAi extends StatelessWidget {
   final int index;

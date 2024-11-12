@@ -51,7 +51,7 @@ class AiGeneratedQuestionState extends State<AiGeneratedQuestion> {
               Checkbox(
                 checkColor: Colors.white,
                 activeColor: const Color.fromARGB(255, 1, 151, 168),
-                value: widget.selectedListItem,
+                value: widget.selectedListItem ?? false,  // Default to false if null
                 onChanged: (value) {
                   setState(() {
                     _isSelected = value ?? false;
@@ -60,6 +60,7 @@ class AiGeneratedQuestionState extends State<AiGeneratedQuestion> {
                   });
                 },
               ),
+
               Expanded(
                 child: Text(
                   'Q${widget.questionNumber + 1}: ${widget.question}',
