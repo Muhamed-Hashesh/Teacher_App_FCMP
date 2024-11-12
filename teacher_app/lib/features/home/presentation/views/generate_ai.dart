@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:teacher_app/features/home/presentation/views/widgets/manual_dialog.dart';
 import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
@@ -21,7 +22,7 @@ class GeneratePageState extends State<GeneratePage> {
   List<Map<String, dynamic>> questions_AI = [];
   String _subject = '';
 
-  Future<void> _fetchQuestions() async {
+  Future<void> _fetchQuestions({bool isGenerateMore = false}) async {
     if (_subject.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a subject')),
@@ -31,18 +32,40 @@ class GeneratePageState extends State<GeneratePage> {
 
     setState(() {
       _isLoading = true;
-      questions_AI = [];
+      if (!isGenerateMore) {
+        questions_AI = [];
+        generateQuestions = false;
+        isGenerateMoreQuestions = false;
+      }
     });
 
     try {
-      List<Map<String, dynamic>> questions =
-      await QuestionGenerator.generateQuestions(_subject);
+      List<Map<String, dynamic>> newQuestions = await QuestionGenerator.generateQuestions(_subject);
+
+      for (var question in newQuestions) {
+        question['selected'] ??= false;
+      }
+
+      if (isGenerateMore) {
+        List<Map<String, dynamic>> selectedQuestions = questions_AI.where((q) => q['selected'] == true).toList();
+
+        questions_AI = List.from(selectedQuestions);
+        questions_AI.addAll(newQuestions.where((q) => !q['selected']).take(10 - selectedQuestions.length));
+      } else {
+        questions_AI = newQuestions;
+      }
+
       setState(() {
-        questions_AI = questions;
+        questions_AI = questions_AI.take(10).toList();
         generateQuestions = true;
-        isGenerateMoreQuestions = false;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Questions generated successfully')),
+      );
+
     } catch (e) {
+      debugPrint('Error generating questions: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error generating questions')),
       );
@@ -52,6 +75,7 @@ class GeneratePageState extends State<GeneratePage> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +149,7 @@ class GeneratePageState extends State<GeneratePage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _fetchQuestions,
+                  onPressed: _isLoading ? null : () => _fetchQuestions(isGenerateMore: false),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: verticalPadding),
                     backgroundColor: const Color.fromARGB(255, 1, 151, 168),
@@ -169,16 +193,12 @@ class GeneratePageState extends State<GeneratePage> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        generateQuestions = false;
-                        isGenerateMoreQuestions = true;
-                      });
-                    },
+                    onPressed: _isLoading ? null : () => _fetchQuestions(isGenerateMore: true),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding / 2,
-                          vertical: verticalPadding),
+                        horizontal: horizontalPadding / 2,
+                        vertical: verticalPadding,
+                      ),
                       backgroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -196,6 +216,7 @@ class GeneratePageState extends State<GeneratePage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
+
                 ),
                 SizedBox(width: horizontalPadding / 2),
                 Expanded(
@@ -302,7 +323,7 @@ class GeneratePageState extends State<GeneratePage> {
                 itemBuilder: (context, index) {
                   final question = _manuallyAddedQuestions[index];
                   final isCorrectAnswerVisible = _isCorrectAnswerVisible[index];
-                  return QuestionCardgeneratingAi(
+                  return QuestionCardGeneratingAi(
                     index: index,
                     questionData: question,
                     isCorrectAnswerVisible: isCorrectAnswerVisible,
@@ -317,81 +338,6 @@ class GeneratePageState extends State<GeneratePage> {
               ),
             ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class QuestionCardgeneratingAi extends StatelessWidget {
-  final int index;
-  final Map<String, dynamic> questionData;
-  final bool isCorrectAnswerVisible;
-  final VoidCallback onVisibilityToggle;
-
-  const QuestionCardgeneratingAi({
-    super.key,
-    required this.index,
-    required this.questionData,
-    required this.isCorrectAnswerVisible,
-    required this.onVisibilityToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Extract data from questionData
-    final String questionText = questionData['question_name'] ?? '';
-    final String optionA = questionData['A'] ?? '';
-    final String optionB = questionData['B'] ?? '';
-    final String optionC = questionData['C'] ?? '';
-    final String optionD = questionData['D'] ?? '';
-    final String correctAnswer = questionData['correct_answer'] ?? '';
-
-    return Card(
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(
-          color: Color.fromARGB(255, 219, 219, 219),
-          width: 1.0,
-        ),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Display the numbered question
-            Text(
-              "${index + 1}. $questionText",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
-            // Display the options labeled as A, B, C, D
-            Text("A. $optionA"),
-            Text("B. $optionB"),
-            Text("C. $optionC"),
-            Text("D. $optionD"),
-            // Display the correct answer if visible
-            if (isCorrectAnswerVisible) ...[
-              const SizedBox(height: 8.0),
-              Text(
-                "Correct Answer: $correctAnswer",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ],
-        ),
-        trailing: IconButton(
-          icon: Icon(
-            isCorrectAnswerVisible ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
-          ),
-          onPressed: onVisibilityToggle,
         ),
       ),
     );
