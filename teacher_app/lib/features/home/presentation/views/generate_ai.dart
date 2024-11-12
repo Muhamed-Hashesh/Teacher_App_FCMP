@@ -282,12 +282,21 @@ class GeneratePageState extends State<GeneratePage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => const LiveExam(),
-                    ),
-                  );
+                  // Filter selected questions
+                  final selectedQuestions = questions_AI.where((q) => q['selected'] == true).toList();
+
+                  if (selectedQuestions.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => LiveExam(questions: selectedQuestions),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select at least one question to start the quiz')),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: verticalPadding),
