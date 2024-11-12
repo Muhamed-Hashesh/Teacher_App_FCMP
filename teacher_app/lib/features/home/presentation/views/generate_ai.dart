@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
-import 'package:teacher_app/question_generator.dart';
+import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
 
