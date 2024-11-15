@@ -4,9 +4,8 @@ import 'package:teacher_app/features/quiz/presentation/views/widgets/quiz_questi
 import 'package:teacher_app/features/quiz/presentation/views/widgets/students_grid.dart';
 
 class LiveExam extends StatefulWidget {
-  final List<Map<String, dynamic>>? questions;
 
-  const LiveExam({super.key, this.questions});
+  const LiveExam({super.key});
 
   @override
   State<LiveExam> createState() => _LiveExamState();
@@ -46,7 +45,7 @@ class _LiveExamState extends State<LiveExam> {
           // Left Panel in a Card - Question Card
           Expanded(
             flex: 1,
-            child: QuestionCardLiveExam(screenWidth: screenWidth, screenHeight: screenHeight, questions: widget.questions!),
+            child: QuestionCardLiveExam(screenWidth: screenWidth, screenHeight: screenHeight),
           ),
           // Right Panel in a Card - Timer and Students Card
           Expanded(

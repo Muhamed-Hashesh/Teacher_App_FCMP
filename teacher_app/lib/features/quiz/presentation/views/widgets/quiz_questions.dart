@@ -1,15 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class QuestionCardLiveExam extends StatefulWidget {
   final double screenWidth;
   final double screenHeight;
-  final List<Map<String, dynamic>> questions;
 
   const QuestionCardLiveExam({
     super.key,
     required this.screenWidth,
     required this.screenHeight,
-    required this.questions,
   });
 
   @override
@@ -17,17 +16,49 @@ class QuestionCardLiveExam extends StatefulWidget {
 }
 
 class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
+  List<Map<String, dynamic>>? _questions;
   List<int?> _selectedOptions = [];
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _selectedOptions = List<int?>.filled(widget.questions.length, null);
+    _fetchQuestions(); // Fetch questions when the widget is initialized
+  }
+
+  Future<void> _fetchQuestions() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('ai_generated_questions')
+          .get();
+
+      final questions = querySnapshot.docs.map((doc) {
+        return {
+          'question': doc['question_name'],
+          'options': [
+            doc['A'] as String,
+            doc['B'] as String,
+            doc['C'] as String,
+            doc['D'] as String,
+          ],
+          'answer': doc['correct_answer'],
+        };
+      }).toList();
+
+      setState(() {
+        _questions = questions;
+        _selectedOptions = List<int?>.filled(questions.length, null);
+      });
+    } catch (e) {
+      // Handle errors
+      setState(() {
+        _questions = [];
+      });
+    }
   }
 
   void _showNextQuestion() {
-    if (_currentIndex < widget.questions.length - 1) {
+    if (_currentIndex < _questions!.length - 1) {
       setState(() {
         _currentIndex++;
       });
@@ -38,11 +69,17 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
   Widget build(BuildContext context) {
     final baseFontSize = widget.screenHeight * 0.02;
 
-    if (widget.questions.isEmpty) {
+    if (_questions == null) {
+      // Show loading indicator while fetching
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (_questions!.isEmpty) {
+      // Show error or empty state
       return const Center(child: Text("No questions available"));
     }
 
-    final questionData = widget.questions[_currentIndex];
+    final questionData = _questions![_currentIndex];
     final questionText = questionData['question'] ?? "Default question text";
     final options = questionData['options'] as List<String>;
 
@@ -66,6 +103,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                 (rowIndex) {
               int firstOptionIndex = rowIndex * 2;
               int secondOptionIndex = firstOptionIndex + 1;
+
               return Row(
                 children: [
                   Expanded(
@@ -135,19 +173,18 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Question ${_currentIndex + 1} of ${widget.questions.length}",
+              "Question ${_currentIndex + 1} of ${_questions!.length}",
               style: TextStyle(
                 fontSize: baseFontSize * 2,
                 fontWeight: FontWeight.bold,
               ),
             ),
             ElevatedButton(
-              onPressed: _currentIndex < widget.questions.length - 1
+              onPressed: _currentIndex < _questions!.length - 1
                   ? _showNextQuestion
                   : () => Navigator.pushReplacementNamed(context, '/resultsPage'),
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                const Color.fromARGB(255, 1, 151, 168),
+                backgroundColor: const Color.fromARGB(255, 1, 151, 168),
                 padding: EdgeInsets.all(widget.screenHeight * 0.05),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -156,13 +193,14 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
               child: Row(
                 children: [
                   Text(
-                    _currentIndex < widget.questions.length - 1
+                    _currentIndex < _questions!.length - 1
                         ? "Next"
                         : "End Quiz",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: baseFontSize * 2,
-                        color: Colors.white),
+                      fontWeight: FontWeight.bold,
+                      fontSize: baseFontSize * 2,
+                      color: Colors.white,
+                    ),
                   ),
                   Icon(Icons.arrow_forward,
                       color: Colors.white, size: baseFontSize * 1.8),
@@ -175,4 +213,3 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
     );
   }
 }
-
