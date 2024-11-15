@@ -195,6 +195,19 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                   ),
                   const SizedBox(height: 8),
                   _buildButtonWithIcon(
+                    Icons.camera_alt,
+                    "Generate using camera",
+                    onPressed: () {
+                      // Navigate to questionBankPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const QuestionBankPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildButtonWithIcon(
                     Icons.account_balance,
                     "Use Question bank",
                     onPressed: () {
