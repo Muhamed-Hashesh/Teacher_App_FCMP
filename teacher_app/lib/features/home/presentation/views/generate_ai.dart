@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:teacher_app/features/home/presentation/views/widgets/manual_dialog.dart';
 import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
-
 
 class GeneratePage extends StatefulWidget {
   const GeneratePage({super.key});
@@ -40,17 +40,21 @@ class GeneratePageState extends State<GeneratePage> {
     });
 
     try {
-      List<Map<String, dynamic>> newQuestions = await QuestionGenerator.generateQuestions(_subject);
+      List<Map<String, dynamic>> newQuestions =
+          await QuestionGenerator.generateQuestions(_subject);
 
       for (var question in newQuestions) {
         question['selected'] ??= false;
       }
 
       if (isGenerateMore) {
-        List<Map<String, dynamic>> selectedQuestions = questions_AI.where((q) => q['selected'] == true).toList();
+        List<Map<String, dynamic>> selectedQuestions =
+            questions_AI.where((q) => q['selected'] == true).toList();
 
         questions_AI = List.from(selectedQuestions);
-        questions_AI.addAll(newQuestions.where((q) => !q['selected']).take(10 - selectedQuestions.length));
+        questions_AI.addAll(newQuestions
+            .where((q) => !q['selected'])
+            .take(10 - selectedQuestions.length));
       } else {
         questions_AI = newQuestions;
       }
@@ -63,7 +67,6 @@ class GeneratePageState extends State<GeneratePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Questions generated successfully')),
       );
-
     } catch (e) {
       debugPrint('Error generating questions: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +78,6 @@ class GeneratePageState extends State<GeneratePage> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +151,9 @@ class GeneratePageState extends State<GeneratePage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : () => _fetchQuestions(isGenerateMore: false),
+                  onPressed: _isLoading
+                      ? null
+                      : () => _fetchQuestions(isGenerateMore: false),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: verticalPadding),
                     backgroundColor: const Color.fromARGB(255, 1, 151, 168),
@@ -160,13 +164,13 @@ class GeneratePageState extends State<GeneratePage> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                    "Generate Questions Using AI",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: buttonFontSize,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                          "Generate Questions Using AI",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: buttonFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -188,12 +192,13 @@ class GeneratePageState extends State<GeneratePage> {
                   },
                 );
               }),
-
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : () => _fetchQuestions(isGenerateMore: true),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _fetchQuestions(isGenerateMore: true),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
                         horizontal: horizontalPadding / 2,
@@ -216,14 +221,13 @@ class GeneratePageState extends State<GeneratePage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-
                 ),
                 SizedBox(width: horizontalPadding / 2),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
                       final questionData =
-                      await showDialog<Map<String, dynamic>>(
+                          await showDialog<Map<String, dynamic>>(
                         context: context,
                         builder: (BuildContext context) {
                           return const ManualQuestionForm(
@@ -281,22 +285,45 @@ class GeneratePageState extends State<GeneratePage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Filter selected questions
-                  final selectedQuestions = questions_AI.where((q) => q['selected'] == true).toList();
-
-                  if (selectedQuestions.isNotEmpty) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) => LiveExam(questions: selectedQuestions),
-                      ),
-                    );
-                  } else {
+                onPressed: () async {
+                  final selectedQuestions =
+                      questions_AI.where((q) => q['selected'] == true).toList();
+                  if (selectedQuestions.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select at least one question to start the quiz')),
+                      const SnackBar(
+                          content: Text(
+                              'Please select at least one question to start the quiz')),
                     );
+                    return;
                   }
+
+                  // Delete all existing questions in 'your_question_list' collection
+                  final querySnapshot = await FirebaseFirestore.instance
+                      .collection('ai_generated_questions')
+                      .get();
+                  for (var doc in querySnapshot.docs) {
+                    await doc.reference.delete();
+                  }
+
+                  // Add selected questions to 'your_question_list' collection in Firebase
+                  for (var question in selectedQuestions) {
+                    await FirebaseFirestore.instance
+                        .collection('ai_generated_questions')
+                        .add({
+                      'A': question['options'][0],
+                      'B': question['options'][1],
+                      'C': question['options'][2],
+                      'D': question['options'][3],
+                      'correct_answer': question['answer'],
+                      'question_name': question['question'],
+                    });
+                  }
+
+                  // Navigate to LiveExam with Firebase-loaded questions
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LiveExam()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: verticalPadding),
@@ -339,7 +366,7 @@ class GeneratePageState extends State<GeneratePage> {
                     onVisibilityToggle: () {
                       setState(() {
                         _isCorrectAnswerVisible[index] =
-                        !_isCorrectAnswerVisible[index];
+                            !_isCorrectAnswerVisible[index];
                       });
                     },
                   );
