@@ -284,60 +284,80 @@ class GeneratePageState extends State<GeneratePage> {
               }).toList(),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final selectedQuestions =
-                      questions_AI.where((q) => q['selected'] == true).toList();
-                  if (selectedQuestions.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Please select at least one question to start the quiz')),
-                    );
-                    return;
-                  }
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (_isLoading) return;
 
-                  // Delete all existing questions in 'your_question_list' collection
-                  final querySnapshot = await FirebaseFirestore.instance
-                      .collection('ai_generated_questions')
-                      .get();
-                  for (var doc in querySnapshot.docs) {
-                    await doc.reference.delete();
-                  }
+                    final selectedQuestions =
+                    questions_AI.where((q) => q['selected'] == true).toList();
+                    if (selectedQuestions.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Please select at least one question to start the quiz')),
+                      );
+                      return;
+                    }
 
-                  // Add selected questions to 'your_question_list' collection in Firebase
-                  for (var question in selectedQuestions) {
-                    await FirebaseFirestore.instance
-                        .collection('ai_generated_questions')
-                        .add({
-                      'A': question['options'][0],
-                      'B': question['options'][1],
-                      'C': question['options'][2],
-                      'D': question['options'][3],
-                      'correct_answer': question['answer'],
-                      'question_name': question['question'],
+                    setState(() {
+                      _isLoading = true; // Start loading
                     });
-                  }
 
-                  // Navigate to LiveExam with Firebase-loaded questions
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LiveExam()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                  backgroundColor: const Color.fromARGB(255, 1, 151, 168),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    try {
+                      // Delete all existing questions in 'ai_generated_questions' collection
+                      final querySnapshot = await FirebaseFirestore.instance
+                          .collection('ai_generated_questions')
+                          .get();
+                      for (var doc in querySnapshot.docs) {
+                        await doc.reference.delete();
+                      }
+
+                      // Add selected questions to 'ai_generated_questions' collection in Firebase
+                      for (var question in selectedQuestions) {
+                        await FirebaseFirestore.instance.collection('ai_generated_questions').add({
+                          'A': question['options'][0],
+                          'B': question['options'][1],
+                          'C': question['options'][2],
+                          'D': question['options'][3],
+                          'correct_answer': question['answer'],
+                          'question_name': question['question'],
+                        });
+                      }
+
+                      // Navigate to LiveExam after successful data send
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LiveExam()),
+                      );
+                    } catch (e) {
+                      debugPrint('Error sending data to Firebase: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to send questions to Firebase')),
+                      );
+                    } finally {
+                      setState(() {
+                        _isLoading = false; // Stop loading
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                    backgroundColor: const Color.fromARGB(255, 1, 151, 168),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: Text(
-                  "Start Quiz",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: buttonFontSize,
-                    fontWeight: FontWeight.bold,
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                    "Start Quiz",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: buttonFontSize,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
