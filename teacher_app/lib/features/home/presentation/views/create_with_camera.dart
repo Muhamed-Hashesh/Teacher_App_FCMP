@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:teacher_app/features/home/presentation/views/camera_page.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 
@@ -14,6 +16,68 @@ class CreateWithCameraPage extends StatefulWidget {
 class CreateWithCameraPageState extends State<CreateWithCameraPage> {
   String? capturedImagePath;
   String? extractedText;
+  File? uploadedFile;
+
+  Future<void> pickFile() async {
+    try {
+      // Open file picker for images
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png'],
+      );
+
+      if (result != null) {
+        setState(() {
+          uploadedFile = File(result.files.single.path!);
+        });
+
+        // Try to extract text and show appropriate messages
+        bool isTextExtracted = await extractTextFromImage(uploadedFile!);
+        if (isTextExtracted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('File uploaded: ${uploadedFile!.path}')),
+          );
+        }
+      } else {
+        // User canceled the picker
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No file selected')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to pick file')),
+      );
+    }
+  }
+
+  Future<bool> extractTextFromImage(File imageFile) async {
+    try {
+      final inputImage = InputImage.fromFile(imageFile);
+      final textRecognizer = GoogleMlKit.vision.textRecognizer();
+
+      final RecognizedText recognizedText =
+          await textRecognizer.processImage(inputImage);
+
+      if (recognizedText.text.isNotEmpty) {
+        setState(() {
+          extractedText = recognizedText.text;
+        });
+        print("Extracted text: $extractedText"); // Debug log
+        textRecognizer.close();
+        return true;
+      } else {
+        print("No text found in the image.");
+        throw Exception("No text found in the image.");
+      }
+    } catch (e) {
+      print("Error during text extraction: $e"); // Log the actual error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to extract text: ${e.toString()}')),
+      );
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +139,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                   const SizedBox(width: 10),
                   ReusableButton(
                     label: 'Upload',
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Upload not implemented')),
-                      );
-                    },
+                    onPressed: pickFile,
                     hasIcon: true,
                     icon: Icons.upload_file,
                   ),
@@ -90,7 +150,8 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
               // Uploaded file display
               const Text('Uploaded'),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8.0),
@@ -100,21 +161,26 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                     const Icon(Icons.insert_drive_file, color: Colors.grey),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'No file selected',
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(color: Colors.grey),
-                          enabled: false,
+                      child: Text(
+                        uploadedFile != null
+                            ? uploadedFile!.path.split('/').last
+                            : 'No file selected',
+                        style: TextStyle(
+                          color:
+                              uploadedFile != null ? Colors.black : Colors.grey,
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      onPressed: () {
-                        // Add functionality to clear uploaded file
-                      },
-                    ),
+                    if (uploadedFile != null)
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          setState(() {
+                            uploadedFile = null;
+                            extractedText = null;
+                          });
+                        },
+                      ),
                   ],
                 ),
               ),
@@ -127,27 +193,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
               ),
               const SizedBox(height: 10),
 
-              // Placeholder for List of Questions (empty for now)
-
-              const SizedBox(height: 20),
-
-              // Display Captured Image (if any)
-              if (capturedImagePath != null)
-                Column(
-                  children: [
-                    const Text(
-                      'Captured Image:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Image.file(
-                      File(capturedImagePath!),
-                      height: 200,
-                    ),
-                  ],
-                ),
-
-              // Display Extracted Text (if any)
+              // Display Extracted Text
               if (extractedText != null)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
