@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:teacher_app/features/home/presentation/views/ask_manually.dart';
 import 'package:teacher_app/features/auth/data/auth_service.dart';
+import 'package:teacher_app/features/home/presentation/views/create_with_camera.dart';
 import 'package:teacher_app/features/home/presentation/views/generate_ai.dart';
 import 'package:teacher_app/features/home/presentation/views/questionbank.dart';
 import 'package:teacher_app/features/home/presentation/views/you_question_lists.dart'; // Import the GeneratePage
@@ -198,11 +199,10 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                     Icons.camera_alt,
                     "Generate using camera",
                     onPressed: () {
-                      // Navigate to questionBankPage
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const QuestionBankPage()),
+                            builder: (context) => const CreateWithCameraPage()),
                       );
                     },
                   ),

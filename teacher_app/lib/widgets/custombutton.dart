@@ -7,6 +7,8 @@ class ReusableButton extends StatelessWidget {
   final Color textColor;
   final double fontSize;
   final FontWeight fontWeight;
+  final bool hasIcon;
+  final IconData icon;
 
   const ReusableButton({
     super.key,
@@ -16,29 +18,39 @@ class ReusableButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.fontSize = 16,
     this.fontWeight = FontWeight.bold,
+    this.hasIcon = false,
+    this.icon = Icons.add,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-           side: const BorderSide(color: Colors.grey),
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: const BorderSide(color: Colors.grey),
+          ),
+          minimumSize: const Size(150, 50), // Width and height
         ),
-        minimumSize: const Size(150, 50), // Width and height
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: fontSize,
-          color: textColor,
-          fontWeight: fontWeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            hasIcon ? Icon(icon, color: textColor) : const SizedBox(),
+            SizedBox(width: hasIcon ? 8 : 0),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: textColor,
+                fontWeight: fontWeight,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
- 
