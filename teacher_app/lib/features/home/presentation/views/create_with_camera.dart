@@ -1,8 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:teacher_app/features/home/presentation/views/camera_page.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 
-class CreateWithCameraPage extends StatelessWidget {
+class CreateWithCameraPage extends StatefulWidget {
   const CreateWithCameraPage({super.key});
+
+  @override
+  CreateWithCameraPageState createState() => CreateWithCameraPageState();
+}
+
+class CreateWithCameraPageState extends State<CreateWithCameraPage> {
+  String? capturedImagePath;
+  String? extractedText;
 
   @override
   Widget build(BuildContext context) {
@@ -39,88 +50,139 @@ class CreateWithCameraPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // "Use Camera" Button
                   ReusableButton(
                     label: 'Use Camera',
-                    onPressed: () {},
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CameraPage(),
+                        ),
+                      );
+
+                      if (result != null && result is Map) {
+                        setState(() {
+                          capturedImagePath = result['imagePath'];
+                          extractedText = result['extractedText'];
+                        });
+                      }
+                    },
                     backgroundColor: Colors.white,
                     textColor: Colors.black,
                     hasIcon: true,
                     icon: Icons.camera_alt_rounded,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   ReusableButton(
                     label: 'Upload',
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Upload not implemented')),
+                      );
+                    },
                     hasIcon: true,
                     icon: Icons.upload_file,
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Uploaded file display
-              Text('Uploaded'),
+              const Text('Uploaded'),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.insert_drive_file, color: Colors.grey),
-                    SizedBox(width: 10),
+                    const Icon(Icons.insert_drive_file, color: Colors.grey),
+                    const SizedBox(width: 10),
                     Expanded(
-                        child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'No file selected',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
-                        enabled: false,
+                      child: TextField(
+                        decoration: const InputDecoration(
+                          hintText: 'No file selected',
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(color: Colors.grey),
+                          enabled: false,
+                        ),
                       ),
-                    )),
+                    ),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.grey),
-                      onPressed: () {},
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () {
+                        // Add functionality to clear uploaded file
+                      },
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Questions Section
-              Text(
+              const Text(
                 'Which questions do you want to include in the session?',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-              // List of questions
+              // Placeholder for List of Questions (empty for now)
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
+
+              // Display Captured Image (if any)
+              if (capturedImagePath != null)
+                Column(
+                  children: [
+                    const Text(
+                      'Captured Image:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Image.file(
+                      File(capturedImagePath!),
+                      height: 200,
+                    ),
+                  ],
+                ),
+
+              // Display Extracted Text (if any)
+              if (extractedText != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Extracted Text:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(extractedText!),
+                  ],
+                ),
+
+              const SizedBox(height: 20),
 
               // Generate Button
               SizedBox(
                 width: double.infinity,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                      backgroundColor: const Color.fromARGB(255, 1, 151, 168),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Add functionality to start the quiz
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: verticalPadding),
+                    backgroundColor: const Color.fromARGB(255, 1, 151, 168),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      "Start Quiz",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: buttonFontSize,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  child: Text(
+                    "Start Quiz",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: buttonFontSize,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
