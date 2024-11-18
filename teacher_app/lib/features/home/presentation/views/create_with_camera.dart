@@ -18,6 +18,10 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
   String? extractedText;
   File? uploadedFile;
 
+  List<String> questions = [];
+  List<List<String>> answers = [];
+  List<String> correctAnswers = [];
+
   Future<void> pickFile() async {
     try {
       // Open file picker for images
@@ -31,7 +35,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
           uploadedFile = File(result.files.single.path!);
         });
 
-        // Try to extract text and show appropriate messages
+        // Extract text and show appropriate messages
         bool isTextExtracted = await extractTextFromImage(uploadedFile!);
         if (isTextExtracted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -63,20 +67,79 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
         setState(() {
           extractedText = recognizedText.text;
         });
-        print("Extracted text: $extractedText"); // Debug log
+
+        // Parse questions, answers, and correct answers
+        Map<String, dynamic> parsedData =
+            parseQuestionsAndAnswers(recognizedText.text);
+
+        setState(() {
+          questions = parsedData['questions'];
+          answers = parsedData['answers'];
+          correctAnswers = parsedData['correctAnswers'];
+        });
+
         textRecognizer.close();
         return true;
       } else {
-        print("No text found in the image.");
         throw Exception("No text found in the image.");
       }
     } catch (e) {
-      print("Error during text extraction: $e"); // Log the actual error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to extract text: ${e.toString()}')),
       );
       return false;
     }
+  }
+
+  Map<String, dynamic> parseQuestionsAndAnswers(String rawText) {
+    Map<String, dynamic> result = {
+      "questions": <String>[],
+      "answers": <List<String>>[],
+      "correctAnswers": <String>[]
+    };
+
+    List<String> lines = rawText.split("\n");
+
+    String? currentQuestion;
+    List<String> currentAnswers = [];
+    String? correctAnswer;
+
+    for (String line in lines) {
+      if (line.endsWith("?")) {
+        // Save the previous question and answers
+        if (currentQuestion != null) {
+          result['questions'] = List<String>.from(result['questions'])
+            ..add(currentQuestion);
+          result['answers'] = List<List<String>>.from(result['answers'])
+            ..add(List<String>.from(currentAnswers));
+          result['correctAnswers'] = List<String>.from(result['correctAnswers'])
+            ..add(correctAnswer ?? "Not provided");
+        }
+
+        // Start new question
+        currentQuestion = line.trim();
+        currentAnswers = [];
+        correctAnswer = null;
+      } else if (line.startsWith(RegExp(r"[A-D]\."))) {
+        // Add answer choices
+        currentAnswers.add(line.trim());
+      } else if (line.startsWith("Correct Answer:")) {
+        // Extract correct answer
+        correctAnswer = line.split(":").last.trim();
+      }
+    }
+
+    // Add the last question if any
+    if (currentQuestion != null) {
+      result['questions'] = List<String>.from(result['questions'])
+        ..add(currentQuestion);
+      result['answers'] = List<List<String>>.from(result['answers'])
+        ..add(List<String>.from(currentAnswers));
+      result['correctAnswers'] = List<String>.from(result['correctAnswers'])
+        ..add(correctAnswer ?? "Not provided");
+    }
+
+    return result;
   }
 
   @override
@@ -146,8 +209,6 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                 ],
               ),
               const SizedBox(height: 20),
-
-              // Uploaded file display
               const Text('Uploaded'),
               Container(
                 padding:
@@ -185,31 +246,43 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Questions Section
               const Text(
                 'Which questions do you want to include in the session?',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 10),
-
-              // Display Extracted Text
-              if (extractedText != null)
+              if (questions.isNotEmpty)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Extracted Text:',
+                      'Extracted Questions:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    Text(extractedText!),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: questions.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Q${index + 1}: ${questions[index]}"),
+                            ...answers[index]
+                                .map((answer) => Text(answer))
+                                .toList(),
+                            Text(
+                              "Correct Answer: ${correctAnswers[index]}",
+                              style: const TextStyle(color: Colors.green),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        );
+                      },
+                    ),
                   ],
                 ),
-
               const SizedBox(height: 20),
-
-              // Generate Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
