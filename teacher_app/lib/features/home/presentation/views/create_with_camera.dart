@@ -68,7 +68,6 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
           extractedText = recognizedText.text;
         });
 
-        // Parse questions, answers, and correct answers
         Map<String, dynamic> parsedData =
             parseQuestionsAndAnswers(recognizedText.text);
 
@@ -84,8 +83,9 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
         throw Exception("No text found in the image.");
       }
     } catch (e) {
+      print("Error extracting text: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to extract text: ${e.toString()}')),
+        SnackBar(content: Text('Failed to extract text: $e')),
       );
       return false;
     }
@@ -129,7 +129,6 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
       }
     }
 
-    // Add the last question if any
     if (currentQuestion != null) {
       result['questions'] = List<String>.from(result['questions'])
         ..add(currentQuestion);
@@ -142,12 +141,34 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
     return result;
   }
 
+  Future<void> openCameraPage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CameraPage(),
+      ),
+    );
+
+    if (result != null && result is Map) {
+      setState(() {
+        capturedImagePath = result['imagePath'];
+        extractedText = result['extractedText'];
+
+        Map<String, dynamic> parsedData =
+            parseQuestionsAndAnswers(extractedText!);
+
+        questions.addAll(parsedData['questions']);
+        answers.addAll(parsedData['answers']);
+        correctAnswers.addAll(parsedData['correctAnswers']);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
-    double horizontalPadding = screenWidth * 0.05;
     double verticalPadding = screenHeight * 0.02;
     double fontSize = screenWidth * 0.045;
     double buttonFontSize = screenWidth * 0.04;
@@ -179,21 +200,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                 children: [
                   ReusableButton(
                     label: 'Use Camera',
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CameraPage(),
-                        ),
-                      );
-
-                      if (result != null && result is Map) {
-                        setState(() {
-                          capturedImagePath = result['imagePath'];
-                          extractedText = result['extractedText'];
-                        });
-                      }
-                    },
+                    onPressed: openCameraPage,
                     backgroundColor: Colors.white,
                     textColor: Colors.black,
                     hasIcon: true,
