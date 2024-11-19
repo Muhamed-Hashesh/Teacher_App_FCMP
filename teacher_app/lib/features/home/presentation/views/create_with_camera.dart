@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:teacher_app/features/home/presentation/views/camera_page.dart';
+import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 
 class CreateWithCameraPage extends StatefulWidget {
@@ -271,20 +272,26 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                       shrinkWrap: true,
                       itemCount: questions.length,
                       itemBuilder: (context, index) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Q${index + 1}: ${questions[index]}"),
-                            ...answers[index]
-                                .map((answer) => Text(answer))
-                                .toList(),
-                            Text(
-                              "Correct Answer: ${correctAnswers[index]}",
-                              style: const TextStyle(color: Colors.green),
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                        );
+                        // return Column(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   children: [
+                        //     Text("Q${index + 1}: ${questions[index]}"),
+                        //     ...answers[index]
+                        //         .map((answer) => Text(answer))
+                        //         .toList(),
+                        //     Text(
+                        //       "Correct Answer: ${correctAnswers[index]}",
+                        //       style: const TextStyle(color: Colors.green),
+                        //     ),
+                        //     const SizedBox(height: 10),
+                        //   ],
+                        // );
+                        return AiGeneratedQuestion(
+                            question: questions[index],
+                            options: answers[index],
+                            correctAnswer: correctAnswers[index],
+                            questionNumber: index + 1,
+                            onSelectionChanged: (bool value) {});
                       },
                     ),
                   ],
