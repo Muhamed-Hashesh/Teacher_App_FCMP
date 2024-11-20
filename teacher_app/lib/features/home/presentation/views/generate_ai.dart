@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/features/home/presentation/views/widgets/manual_dialog.dart';
 import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
-import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
 
@@ -281,7 +281,7 @@ class GeneratePageState extends State<GeneratePage> {
                   selectedListItem: question['selected'],
                   onSelectionChanged: (bool value) {},
                 );
-              }).toList(),
+              }),
             SizedBox(
               width: double.infinity,
               child: SizedBox(
@@ -290,8 +290,9 @@ class GeneratePageState extends State<GeneratePage> {
                   onPressed: () async {
                     if (_isLoading) return;
 
-                    final selectedQuestions =
-                    questions_AI.where((q) => q['selected'] == true).toList();
+                    final selectedQuestions = questions_AI
+                        .where((q) => q['selected'] == true)
+                        .toList();
                     if (selectedQuestions.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -316,7 +317,9 @@ class GeneratePageState extends State<GeneratePage> {
 
                       // Add selected questions to 'ai_generated_questions' collection in Firebase
                       for (var question in selectedQuestions) {
-                        await FirebaseFirestore.instance.collection('ai_generated_questions').add({
+                        await FirebaseFirestore.instance
+                            .collection('ai_generated_questions')
+                            .add({
                           'A': question['options'][0],
                           'B': question['options'][1],
                           'C': question['options'][2],
@@ -334,7 +337,9 @@ class GeneratePageState extends State<GeneratePage> {
                     } catch (e) {
                       debugPrint('Error sending data to Firebase: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to send questions to Firebase')),
+                        const SnackBar(
+                            content:
+                                Text('Failed to send questions to Firebase')),
                       );
                     } finally {
                       setState(() {
@@ -352,13 +357,13 @@ class GeneratePageState extends State<GeneratePage> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                    "Start Quiz",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: buttonFontSize,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                          "Start Quiz",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: buttonFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),

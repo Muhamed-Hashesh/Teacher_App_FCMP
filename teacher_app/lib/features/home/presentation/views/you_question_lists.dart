@@ -1,18 +1,17 @@
 // your_question_lists_page.dart
 
 import 'dart:typed_data'; // For handling bytes
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Cloud Firestore
 import 'package:excel/excel.dart'; // Package to handle Excel files
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
-import 'package:teacher_app/widgets/upload_file_button.dart';
-import 'package:teacher_app/widgets/action_buttons.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
-import '../../../quiz/presentation/views/live_exam.dart'; // Replace with the correct path to your LiveExam widget
+import 'package:teacher_app/widgets/upload_file_button.dart';
 import 'package:uuid/uuid.dart'; // For generating unique IDs
-import 'package:teacher_app/utils/quistions_ai.dart';
-import 'package:teacher_app/widgets/ai_generated_question.dart';
+
+import '../../../quiz/presentation/views/live_exam.dart'; // Replace with the correct path to your LiveExam widget
 
 class YourQuestionListsPage extends StatefulWidget {
   const YourQuestionListsPage({super.key});
@@ -26,7 +25,8 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
   String? _selectedSheetId; // Holds the selected sheet's ID
   bool _isLoading = false; // To handle loading state
 
-  List<SheetInfo> _uploadedSheets = []; // List to store uploaded sheet information
+  List<SheetInfo> _uploadedSheets =
+      []; // List to store uploaded sheet information0
 
   // List to store fetched questions for the selected sheet
   List<Question> _questions = [];
@@ -160,8 +160,9 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         }
 
         // Validate that the headers match the expected headers
-        final headers =
-            excelRows.first.map((e) => e.toString().trim().toLowerCase()).toList();
+        final headers = excelRows.first
+            .map((e) => e.toString().trim().toLowerCase())
+            .toList();
         List<String> expectedHeaders = [
           'question',
           'a',
@@ -315,8 +316,10 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
       // Add the manual question to the _questions list
       setState(() {
         _questions.add(manualQuestion);
-        _visibleAnswers.remove(manualQuestion.id); // Ensure answer is hidden initially
-        _selectedQuestions.remove(manualQuestion.id); // Ensure it's not selected
+        _visibleAnswers
+            .remove(manualQuestion.id); // Ensure answer is hidden initially
+        _selectedQuestions
+            .remove(manualQuestion.id); // Ensure it's not selected
       });
 
       // Provide feedback to the user
@@ -355,13 +358,15 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
       QuerySnapshot questionsSnapshot =
           await sheetDocRef.collection(selectedSheet.fileName).get();
 
-      List<Question> fetchedQuestions =
-          questionsSnapshot.docs.map((doc) => Question.fromDocument(doc)).toList();
+      List<Question> fetchedQuestions = questionsSnapshot.docs
+          .map((doc) => Question.fromDocument(doc))
+          .toList();
 
       setState(() {
         _questions = fetchedQuestions;
         _visibleAnswers.clear(); // Reset visibility when new sheet is selected
-        _selectedQuestions.clear(); // Reset selections when new sheet is selected
+        _selectedQuestions
+            .clear(); // Reset selections when new sheet is selected
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -388,7 +393,8 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
   @override
   Widget build(BuildContext context) {
     // Generate list of dropdown items with unique keys (sheet IDs)
-    List<String> dropdownItems = _uploadedSheets.map((sheet) => sheet.id).toList();
+    List<String> dropdownItems =
+        _uploadedSheets.map((sheet) => sheet.id).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -422,36 +428,43 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
 
                 // Select Uploaded File Dropdown
                 _buildDropdown(dropdownItems),
-                const SizedBox(height: 24),
-
-                // Add Using AI and Add Manually Buttons
-                ActionButtons(
-                  onAddUsingAI: () {
-                    if(generateQuestions == false){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                            Text('Add Using AI functionality not implemented.')),
-                      );
-                    }
-                      setState(() {
-                        generateQuestions = true;
-                      });
-
-                    // Handle add using AI action
-                    // Implement this functionality as needed
-
-                  },
-                  onAddManually: () {
-                    _showManualQuestionDialog();
-                  },
-                ),
-                const SizedBox(height: 24),
-                ... generateQuestions ? List.generate(aiQuestionsList.length, (index) {
-                  final question = aiQuestionsList[index];
-                  final options = question['options'] as List<String>;
-                  return AiGeneratedQuestion(question: question['question'], options: options, correctAnswer: question['correctAnswer'], questionNumber: index, onSelectionChanged: (bool value) {  },);
-                }) : [],
+                // const SizedBox(height: 24),
+                //
+                // // Add Using AI and Add Manually Buttons
+                // ActionButtons(
+                //   onAddUsingAI: () {
+                //     if (generateQuestions == false) {
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         const SnackBar(
+                //             content: Text(
+                //                 'Add Using AI functionality not implemented.')),
+                //       );
+                //     }
+                //     setState(() {
+                //       generateQuestions = true;
+                //     });
+                //
+                //     // Handle add using AI action
+                //     // Implement this functionality as needed
+                //   },
+                //   onAddManually: () {
+                //     _showManualQuestionDialog();
+                //   },
+                // ),
+                // const SizedBox(height: 24),
+                // ...generateQuestions
+                //     ? List.generate(aiQuestionsList.length, (index) {
+                //         final question = aiQuestionsList[index];
+                //         final options = question['options'] as List<String>;
+                //         return AiGeneratedQuestion(
+                //           question: question['question'],
+                //           options: options,
+                //           correctAnswer: question['correctAnswer'],
+                //           questionNumber: index,
+                //           onSelectionChanged: (bool value) {},
+                //         );
+                //       })
+                //     : [],
                 // Display Questions if any
                 if (_questions.isNotEmpty) ...[
                   const Text(
@@ -464,7 +477,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                   const SizedBox(height: 12),
 
                   // Optional: Add a "Select All" checkbox
-                 
 
                   ListView.builder(
                     shrinkWrap: true,
@@ -473,7 +485,8 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                     itemBuilder: (context, index) {
                       final question = _questions[index];
                       bool isVisible = _visibleAnswers.contains(question.id);
-                      bool isSelected = _selectedQuestions.contains(question.id);
+                      bool isSelected =
+                          _selectedQuestions.contains(question.id);
                       return Card(
                         shape: OutlineInputBorder(
                           borderSide:
@@ -515,8 +528,9 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                                       isVisible
                                           ? Icons.visibility
                                           : Icons.visibility_off,
-                                      color:
-                                          isVisible ? Colors.green : Colors.grey,
+                                      color: isVisible
+                                          ? Colors.green
+                                          : Colors.grey,
                                     ),
                                     tooltip: isVisible
                                         ? 'Hide Correct Answer'
@@ -579,7 +593,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                       );
                     },
                   ),
-                 
                 ],
 
                 // Start Quiz Button
@@ -670,8 +683,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
       ],
     );
   }
-
-  
 
   /// Method to delete selected questions
 }
