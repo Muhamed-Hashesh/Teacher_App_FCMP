@@ -1,17 +1,14 @@
-// your_question_lists_page.dart
+import 'dart:typed_data';
 
-import 'dart:typed_data'; // For handling bytes
-
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Cloud Firestore
-import 'package:excel/excel.dart'; // Package to handle Excel files
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
 import 'package:teacher_app/widgets/upload_file_button.dart';
-import 'package:uuid/uuid.dart'; // For generating unique IDs
-
-import '../../../quiz/presentation/views/live_exam.dart'; // Replace with the correct path to your LiveExam widget
+import 'package:uuid/uuid.dart';
 
 class YourQuestionListsPage extends StatefulWidget {
   const YourQuestionListsPage({super.key});
@@ -22,22 +19,17 @@ class YourQuestionListsPage extends StatefulWidget {
 
 class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
   bool generateQuestions = false;
-  String? _selectedSheetId; // Holds the selected sheet's ID
-  bool _isLoading = false; // To handle loading state
+  String? _selectedSheetId;
+  bool _isLoading = false;
 
-  List<SheetInfo> _uploadedSheets =
-      []; // List to store uploaded sheet information0
+  List<SheetInfo> _uploadedSheets = [];
 
-  // List to store fetched questions for the selected sheet
   List<Question> _questions = [];
 
-  // Set to track which questions have their correct answers visible
   final Set<String> _visibleAnswers = {};
 
-  // Set to track which questions are selected via checkboxes
   final Set<String> _selectedQuestions = {};
 
-  // Initialize UUID generator
   final Uuid _uuid = Uuid();
 
   @override
@@ -80,11 +72,10 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
     });
 
     try {
-      // Pick any file, specifically allowing Excel files
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls'], // Allow Excel files
-        withData: true, // Ensure that the bytes are loaded
+        allowedExtensions: ['xlsx', 'xls'],
+        withData: true,
       );
 
       if (result != null && result.files.single.bytes != null) {
@@ -93,11 +84,9 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         Uint8List fileBytes = file.bytes!;
         String fileName = file.name;
 
-        // If the file is an Excel file, decode and upload it
         if (_isExcelFile(file.extension)) {
           await _decodeAndUploadExcelFile(fileBytes, fileName);
         } else {
-          // Handle other file types as needed
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('File "$fileName" is not an Excel file.'),
@@ -105,7 +94,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
           );
         }
       } else {
-        // Handle cases where no file is selected or bytes are not available
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('No file selected or failed to load the file.'),
@@ -113,7 +101,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         );
       }
     } catch (e) {
-      // Handle any unexpected errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking file: $e')),
       );
@@ -143,7 +130,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         throw FormatException('The Excel file contains no sheets.');
       }
 
-      // Iterate over all sheets in the Excel file
       for (String sheetName in excel.tables.keys) {
         final sheet = excel.tables[sheetName];
         if (sheet == null) continue;
@@ -151,7 +137,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         List<List<dynamic>> excelRows = [];
 
         for (var row in sheet.rows) {
-          // Convert each cell to its value or an empty string if null
           excelRows.add(row.map((cell) => cell?.value ?? "").toList());
         }
 
@@ -159,7 +144,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
           throw FormatException('Sheet "$sheetName" is empty.');
         }
 
-        // Validate that the headers match the expected headers
         final headers = excelRows.first
             .map((e) => e.toString().trim().toLowerCase())
             .toList();
@@ -185,7 +169,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
               'The headers in sheet "$sheetName" do not match the expected format.');
         }
 
-        // **Duplicate Sheet Check**
         QuerySnapshot duplicateCheck = await FirebaseFirestore.instance
             .collection('available_sheets')
             .where('sheet_name', isEqualTo: sheetName)
@@ -198,13 +181,11 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                 content: Text(
                     'Sheet "$sheetName" from file "$originalFileName" already exists. Skipping upload.')),
           );
-          continue; // Skip uploading this sheet
+          continue;
         }
 
-        // Remove the header row
         final dataRows = excelRows.sublist(1);
 
-        // **Add entry to 'available_sheets' collection**
         DocumentReference sheetDocRef =
             FirebaseFirestore.instance.collection('available_sheets').doc();
 
@@ -213,7 +194,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
           'file_name': originalFileName,
         });
 
-        // Add the sheet info to the local list for dropdown
         setState(() {
           _uploadedSheets.add(SheetInfo(
             id: sheetDocRef.id,
@@ -223,17 +203,14 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
           ));
         });
 
-        // **Upload data to Firestore under the subcollection**
         await _uploadDataToFirestore(
             dataRows, sheetName, originalFileName, sheetDocRef.id);
       }
 
-      // Provide feedback to the user
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All sheets uploaded successfully.')),
       );
     } catch (e) {
-      // Handle decoding and uploading errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process Excel file: $e')),
       );
@@ -269,14 +246,11 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
         'created_at': FieldValue.serverTimestamp(),
       };
 
-      // Validate required fields
       if (questionData['question'].isEmpty ||
           questionData['correctanswer'].isEmpty) {
-        // Skip this question or handle the error
         continue;
       }
 
-      // Create a document ID, e.g., question1, question2, etc.
       String questionDocId = 'question${i + 1}';
 
       DocumentReference questionDocRef = subCollectionRef.doc(questionDocId);
@@ -302,7 +276,6 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
       // Create a unique ID for the manual question
       String manualQuestionId = 'manual_${_uuid.v4()}';
 
-      // Convert the questionData to a Question object
       Question manualQuestion = Question(
         id: manualQuestionId,
         question: questionData['question'] ?? '',
