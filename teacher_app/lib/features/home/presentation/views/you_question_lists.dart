@@ -262,7 +262,7 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
   }
 
   /// Method to show the manual question form in a dialog
-  void _showManualQuestionDialog() async {
+  void showManualQuestionDialog() async {
     final questionData = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (BuildContext context) {

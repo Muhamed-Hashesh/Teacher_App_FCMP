@@ -293,6 +293,7 @@ class GeneratePageState extends State<GeneratePage> {
                     final selectedQuestions = questions_AI
                         .where((q) => q['selected'] == true)
                         .toList();
+
                     if (selectedQuestions.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -303,7 +304,7 @@ class GeneratePageState extends State<GeneratePage> {
                     }
 
                     setState(() {
-                      _isLoading = true;
+                      _isLoading = true; // Start loading
                     });
 
                     try {
@@ -333,16 +334,26 @@ class GeneratePageState extends State<GeneratePage> {
                           .doc('SessionID$latestSessionID')
                           .collection('QuestionLists');
 
-                      // // Clear existing questions in QuestionLists
-                      // final existingQuestions =
-                      //     await questionListsCollection.get();
-                      // for (var doc in existingQuestions.docs) {
-                      //   await doc.reference.delete();
-                      // }
+                      // Get the current maximum document ID in QuestionLists
+                      final existingQuestionsSnapshot =
+                          await questionListsCollection.get();
+                      final existingNumbers = existingQuestionsSnapshot.docs
+                          .map((doc) => int.tryParse(doc.id))
+                          .whereType<int>()
+                          .toList();
+                      existingNumbers.sort();
 
+                      // Determine the next number to start adding new questions
+                      int nextNumber = existingNumbers.isNotEmpty
+                          ? existingNumbers.last + 1
+                          : 1;
+
+                      // Add new questions without replacing existing ones
                       for (int i = 0; i < selectedQuestions.length; i++) {
                         final question = selectedQuestions[i];
-                        await questionListsCollection.doc('${i + 1}').set({
+                        await questionListsCollection
+                            .doc('${nextNumber + i}')
+                            .set({
                           'A': question['options'][0],
                           'B': question['options'][1],
                           'C': question['options'][2],
@@ -352,6 +363,11 @@ class GeneratePageState extends State<GeneratePage> {
                         });
                       }
 
+                      // Show success message and navigate to LiveExam
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Questions added successfully!')),
+                      );
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => LiveExam()),
@@ -365,7 +381,7 @@ class GeneratePageState extends State<GeneratePage> {
                       );
                     } finally {
                       setState(() {
-                        _isLoading = false;
+                        _isLoading = false; // Stop loading
                       });
                     }
                   },

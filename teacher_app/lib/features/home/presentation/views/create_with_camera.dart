@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:teacher_app/features/home/presentation/views/camera_page.dart';
+import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 
@@ -18,6 +20,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
   String? capturedImagePath;
   String? extractedText;
   File? uploadedFile;
+  bool _isLoading = false;
 
   List<String> questions = [];
   List<List<String>> answers = [];
@@ -300,8 +303,96 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add functionality to start the quiz
+                  onPressed: () async {
+                    if (_isLoading) return;
+
+                    if (questions.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Please upload an image or capture text to include questions.'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    setState(() {
+                      _isLoading = true; // Start loading
+                    });
+
+                    try {
+                      final firestore = FirebaseFirestore.instance;
+
+                      // 1. Fetch the latest SessionID
+                      final sessionsSnapshot =
+                          await firestore.collection('Sessions').get();
+                      final sessionIDs = sessionsSnapshot.docs
+                          .map((doc) => doc.id)
+                          .where((id) => id.startsWith('SessionID'))
+                          .map((id) =>
+                              int.tryParse(id.replaceFirst('SessionID', '')))
+                          .whereType<int>()
+                          .toList();
+                      sessionIDs.sort();
+
+                      final latestSessionID =
+                          sessionIDs.isNotEmpty ? sessionIDs.last : 0;
+
+                      if (latestSessionID == 0) {
+                        throw Exception('No valid sessions found.');
+                      }
+
+                      // 2. Reference the QuestionLists subcollection of the latest session
+                      final questionListsCollection = firestore
+                          .collection('Sessions')
+                          .doc('SessionID$latestSessionID')
+                          .collection('QuestionLists');
+
+                      // 3. Determine the next available number for new questions
+                      final existingQuestionsSnapshot =
+                          await questionListsCollection.get();
+                      final existingNumbers = existingQuestionsSnapshot.docs
+                          .map((doc) => int.tryParse(doc.id))
+                          .whereType<int>()
+                          .toList();
+                      existingNumbers.sort();
+
+                      int nextNumber = existingNumbers.isNotEmpty
+                          ? existingNumbers.last + 1
+                          : 1;
+
+                      // 4. Save questions with unique IDs starting from `nextNumber`
+                      for (int i = 0; i < questions.length; i++) {
+                        await questionListsCollection
+                            .doc('${nextNumber + i}')
+                            .set({
+                          'question_name': questions[i],
+                          'A': answers[i].length > 0 ? answers[i][0] : '',
+                          'B': answers[i].length > 1 ? answers[i][1] : '',
+                          'C': answers[i].length > 2 ? answers[i][2] : '',
+                          'D': answers[i].length > 3 ? answers[i][3] : '',
+                          'correct_answer': correctAnswers[i],
+                        });
+                      }
+
+                      // 5. Navigate to LiveExam after successful data save
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LiveExam()),
+                      );
+                    } catch (e) {
+                      debugPrint('Error saving questions to Firebase: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text('Failed to save questions to Firebase.'),
+                        ),
+                      );
+                    } finally {
+                      setState(() {
+                        _isLoading = false; // Stop loading
+                      });
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: verticalPadding),

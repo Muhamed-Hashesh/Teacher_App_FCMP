@@ -28,10 +28,30 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
 
   Future<void> _fetchQuestions() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('ai_generated_questions')
-          .get();
+      final firestore = FirebaseFirestore.instance;
 
+      // Fetch all SessionIDs
+      final sessionsSnapshot = await firestore.collection('Sessions').get();
+      final sessionIDs = sessionsSnapshot.docs
+          .map((doc) => doc.id)
+          .where((id) => id.startsWith('SessionID'))
+          .map((id) => int.tryParse(id.replaceFirst('SessionID', '')))
+          .whereType<int>()
+          .toList();
+      sessionIDs.sort(); // Sort the IDs to find the biggest
+
+      if (sessionIDs.isEmpty) {
+        throw Exception('No SessionIDs found.');
+      }
+
+      // Get the biggest SessionID
+      final biggestSessionID = sessionIDs.last;
+      final questionListsCollection = firestore
+          .collection('Sessions')
+          .doc('SessionID$biggestSessionID')
+          .collection('QuestionLists');
+
+      final querySnapshot = await questionListsCollection.get();
       final questions = querySnapshot.docs.map((doc) {
         return {
           'question': doc['question_name'],
@@ -54,6 +74,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
       setState(() {
         _questions = [];
       });
+      debugPrint('Error fetching questions: $e');
     }
   }
 
@@ -100,7 +121,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
         Column(
           children: List.generate(
             (options.length / 2).ceil(),
-                (rowIndex) {
+            (rowIndex) {
               int firstOptionIndex = rowIndex * 2;
               int secondOptionIndex = firstOptionIndex + 1;
 
@@ -114,9 +135,8 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _selectedOptions[_currentIndex] == firstOptionIndex
-                            ? Colors.blue
-                            : const Color.fromARGB(255, 233, 233, 233),
+                        backgroundColor:
+                            const Color.fromARGB(255, 233, 233, 233),
                         padding: EdgeInsets.all(widget.screenHeight * 0.02),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -126,9 +146,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                         options[firstOptionIndex],
                         style: TextStyle(
                           fontSize: baseFontSize * 2,
-                          color: _selectedOptions[_currentIndex] == firstOptionIndex
-                              ? Colors.white
-                              : Colors.black,
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -143,9 +161,8 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedOptions[_currentIndex] == secondOptionIndex
-                              ? Colors.blue
-                              : const Color.fromARGB(255, 233, 233, 233),
+                          backgroundColor:
+                              const Color.fromARGB(255, 233, 233, 233),
                           padding: EdgeInsets.all(widget.screenHeight * 0.02),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -155,9 +172,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                           options[secondOptionIndex],
                           style: TextStyle(
                             fontSize: baseFontSize * 2,
-                            color: _selectedOptions[_currentIndex] == secondOptionIndex
-                                ? Colors.white
-                                : Colors.black,
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -182,7 +197,8 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
             ElevatedButton(
               onPressed: _currentIndex < _questions!.length - 1
                   ? _showNextQuestion
-                  : () => Navigator.pushReplacementNamed(context, '/resultsPage'),
+                  : () =>
+                      Navigator.pushReplacementNamed(context, '/resultsPage'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 1, 151, 168),
                 padding: EdgeInsets.all(widget.screenHeight * 0.05),

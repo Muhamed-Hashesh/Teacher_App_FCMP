@@ -4,7 +4,6 @@ import 'package:teacher_app/features/quiz/presentation/views/widgets/quiz_questi
 import 'package:teacher_app/features/quiz/presentation/views/widgets/students_grid.dart';
 
 class LiveExam extends StatefulWidget {
-
   const LiveExam({super.key});
 
   @override
@@ -45,7 +44,8 @@ class _LiveExamState extends State<LiveExam> {
           // Left Panel in a Card - Question Card
           Expanded(
             flex: 1,
-            child: QuestionCardLiveExam(screenWidth: screenWidth, screenHeight: screenHeight),
+            child: QuestionCardLiveExam(
+                screenWidth: screenWidth, screenHeight: screenHeight),
           ),
           // Right Panel in a Card - Timer and Students Card
           Expanded(
@@ -70,7 +70,6 @@ class _LiveExamState extends State<LiveExam> {
                           horizontal: screenWidth * 0.02),
                       child: Column(
                         children: [
-                          // Timer and students count row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -133,6 +132,3 @@ class _LiveExamState extends State<LiveExam> {
     );
   }
 }
-
-
-
