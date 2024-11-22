@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:teacher_app/features/home/presentation/views/ask_manually.dart';
 import 'package:teacher_app/features/auth/data/auth_service.dart';
+import 'package:teacher_app/features/home/presentation/views/ask_manually.dart';
 import 'package:teacher_app/features/home/presentation/views/create_with_camera.dart';
 import 'package:teacher_app/features/home/presentation/views/generate_ai.dart';
 import 'package:teacher_app/features/home/presentation/views/questionbank.dart';
@@ -27,7 +27,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
   bool _isTimed = false;
   bool _isGamified = true;
   bool _isAnonymous = false;
-  bool _showOptions = false; // Added variable to track if options are shown
+  bool _showOptions = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,66 +37,75 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: Drawer(
-  child: ListView(
-    padding: EdgeInsets.zero,
-    children: <Widget>[
-      const DrawerHeader(
-        decoration: BoxDecoration(
-          color: Color.fromARGB(255, 1, 151, 168),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 1, 151, 168),
+              ),
+              child: Text(
+                'Teacher App',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.family_restroom),
+              title: const Text(
+                'Chat',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Handle navigation to Chat page here
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.school_outlined),
+              title: const Text(
+                'Student',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Handle navigation to Student page here
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(), // Optional: Adds a separator
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () async {
+                // Sign out logic
+                await AuthService().signOut();
+                // Navigate to sign-in page
+                // ignore: use_build_context_synchronously
+                Navigator.pushNamedAndRemoveUntil(
+                    context, '/signin', (route) => false);
+              },
+            ),
+          ],
         ),
-        child: Text(
-          'Teacher App',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
       ),
-      ListTile(
-        leading: const Icon(Icons.family_restroom),
-        title: const Text('Chat', style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),),
-        onTap: () {
-          // Handle navigation to Chat page here
-          Navigator.pop(context);
-        },
-      ),
-      ListTile(
-        leading: const Icon(Icons.school_outlined),
-        title: const Text('Student',   style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),),
-        onTap: () {
-          // Handle navigation to Student page here
-          Navigator.pop(context);
-        },
-      ),
-      const Divider(), // Optional: Adds a separator
-      ListTile(
-        leading: const Icon(Icons.logout),
-        title: const Text('Sign Out', style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),),
-        onTap: () async {
-          // Sign out logic
-          await AuthService().signOut();
-          // Navigate to sign-in page
-          // ignore: use_build_context_synchronously
-          Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
-        },
-      ),
-    ],
-  ),
-),
-
       appBar: AppBar(
         foregroundColor: Colors.white,
         centerTitle: true,

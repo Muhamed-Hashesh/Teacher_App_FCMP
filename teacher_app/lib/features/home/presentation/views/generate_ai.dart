@@ -303,23 +303,46 @@ class GeneratePageState extends State<GeneratePage> {
                     }
 
                     setState(() {
-                      _isLoading = true; // Start loading
+                      _isLoading = true;
                     });
 
                     try {
-                      // Delete all existing questions in 'ai_generated_questions' collection
-                      final querySnapshot = await FirebaseFirestore.instance
-                          .collection('ai_generated_questions')
-                          .get();
-                      for (var doc in querySnapshot.docs) {
-                        await doc.reference.delete();
+                      final firestore = FirebaseFirestore.instance;
+
+                      // Get the latest SessionID
+                      final sessionsSnapshot =
+                          await firestore.collection('Sessions').get();
+                      final sessionIDs = sessionsSnapshot.docs
+                          .map((doc) => doc.id)
+                          .where((id) => id.startsWith('SessionID'))
+                          .map((id) =>
+                              int.tryParse(id.replaceFirst('SessionID', '')))
+                          .whereType<int>()
+                          .toList();
+                      sessionIDs.sort();
+                      final latestSessionID =
+                          sessionIDs.isNotEmpty ? sessionIDs.last : 0;
+
+                      if (latestSessionID == 0) {
+                        throw Exception('No valid sessions found.');
                       }
 
-                      // Add selected questions to 'ai_generated_questions' collection in Firebase
-                      for (var question in selectedQuestions) {
-                        await FirebaseFirestore.instance
-                            .collection('ai_generated_questions')
-                            .add({
+                      // Reference to QuestionLists in the latest session
+                      final questionListsCollection = firestore
+                          .collection('Sessions')
+                          .doc('SessionID$latestSessionID')
+                          .collection('QuestionLists');
+
+                      // // Clear existing questions in QuestionLists
+                      // final existingQuestions =
+                      //     await questionListsCollection.get();
+                      // for (var doc in existingQuestions.docs) {
+                      //   await doc.reference.delete();
+                      // }
+
+                      for (int i = 0; i < selectedQuestions.length; i++) {
+                        final question = selectedQuestions[i];
+                        await questionListsCollection.doc('${i + 1}').set({
                           'A': question['options'][0],
                           'B': question['options'][1],
                           'C': question['options'][2],
@@ -329,21 +352,20 @@ class GeneratePageState extends State<GeneratePage> {
                         });
                       }
 
-                      // Navigate to LiveExam after successful data send
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => LiveExam()),
                       );
                     } catch (e) {
-                      debugPrint('Error sending data to Firebase: $e');
+                      debugPrint('Error saving questions to Firebase: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content:
-                                Text('Failed to send questions to Firebase')),
+                                Text('Failed to save questions to Firebase')),
                       );
                     } finally {
                       setState(() {
-                        _isLoading = false; // Stop loading
+                        _isLoading = false;
                       });
                     }
                   },
