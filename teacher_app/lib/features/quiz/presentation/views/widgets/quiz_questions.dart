@@ -92,7 +92,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
 
     if (_questions == null) {
       // Show loading indicator while fetching
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_questions!.isEmpty) {
@@ -104,128 +104,144 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
     final questionText = questionData['question'] ?? "Default question text";
     final options = questionData['options'] as List<String>;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: Text(
-            questionText,
-            style: TextStyle(
-              fontSize: baseFontSize * 2.5,
-              fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 20),
+            child: Text(
+              questionText,
+              style: TextStyle(
+                fontSize: baseFontSize * 2.5,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        SizedBox(height: widget.screenHeight * 0.06),
-        Column(
-          children: List.generate(
-            (options.length / 2).ceil(),
-            (rowIndex) {
-              int firstOptionIndex = rowIndex * 2;
-              int secondOptionIndex = firstOptionIndex + 1;
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedOptions[_currentIndex] = firstOptionIndex;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 233, 233, 233),
-                        padding: EdgeInsets.all(widget.screenHeight * 0.02),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        options[firstOptionIndex],
+          Expanded(
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: widget.screenWidth * 0.01,
+                mainAxisSpacing: widget.screenHeight * 0.02,
+                childAspectRatio: 3,
+              ),
+              itemCount: options.length,
+              itemBuilder: (context, index) {
+                String letterPrefix = "${String.fromCharCode(65 + index)})";
+                return ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedOptions[_currentIndex] = index;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 233, 233, 233),
+                    padding: EdgeInsets.all(widget.screenHeight * 0.01),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Letter Prefix
+                      SizedBox(width: 8),
+                      Text(
+                        letterPrefix,
                         style: TextStyle(
-                          fontSize: baseFontSize * 2,
+                          fontSize: baseFontSize * 1.6,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                    ),
-                  ),
-                  if (secondOptionIndex < options.length) ...[
-                    SizedBox(width: widget.screenWidth * 0.01),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedOptions[_currentIndex] = secondOptionIndex;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 233, 233, 233),
-                          padding: EdgeInsets.all(widget.screenHeight * 0.02),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                      const SizedBox(width: 8),
+                      // Space between letter and option
+                      // Option Text
+                      Expanded(
                         child: Text(
-                          options[secondOptionIndex],
+                          options[index],
+                          textAlign: TextAlign.left,
                           style: TextStyle(
-                            fontSize: baseFontSize * 2,
+                            fontSize: baseFontSize * 1.6,
                             color: Colors.black,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ],
-              );
-            },
-          ),
-        ),
-        const Spacer(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Question ${_currentIndex + 1} of ${_questions!.length}",
-              style: TextStyle(
-                fontSize: baseFontSize * 2,
-                fontWeight: FontWeight.bold,
-              ),
+                    ],
+                  ),
+                );
+              },
             ),
-            ElevatedButton(
-              onPressed: _currentIndex < _questions!.length - 1
-                  ? _showNextQuestion
-                  : () =>
-                      Navigator.pushReplacementNamed(context, '/resultsPage'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 1, 151, 168),
-                padding: EdgeInsets.all(widget.screenHeight * 0.05),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 217, 217, 217),
+                  padding: EdgeInsets.all(widget.screenHeight * 0.05),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      "Options",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: baseFontSize * 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Icon(Icons.settings,
+                        color: Colors.white, size: baseFontSize * 2.5),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Text(
-                    _currentIndex < _questions!.length - 1
-                        ? "Next"
-                        : "End Quiz",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: baseFontSize * 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Icon(Icons.arrow_forward,
-                      color: Colors.white, size: baseFontSize * 1.8),
-                ],
+              Text(
+                "Question ${_currentIndex + 1} of ${_questions!.length}",
+                style: TextStyle(
+                  fontSize: baseFontSize * 2,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+              ElevatedButton(
+                onPressed: _currentIndex < _questions!.length - 1
+                    ? _showNextQuestion
+                    : () =>
+                        Navigator.pushReplacementNamed(context, '/resultsPage'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 1, 151, 168),
+                  padding: EdgeInsets.all(widget.screenHeight * 0.05),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _currentIndex < _questions!.length - 1
+                          ? "Next"
+                          : "End Quiz",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: baseFontSize * 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward,
+                        color: Colors.white, size: baseFontSize * 1.8),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

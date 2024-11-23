@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class ResultsPage extends StatefulWidget {
   const ResultsPage({super.key});
@@ -9,7 +9,6 @@ class ResultsPage extends StatefulWidget {
 }
 
 class ResultsPageState extends State<ResultsPage> {
-  // Variables to store data fetched for display or further processing if needed
   List<Map<String, dynamic>> studentInfoList = [];
   bool isLoading = true; // To manage the loading state
 
@@ -42,7 +41,7 @@ class ResultsPageState extends State<ResultsPage> {
         for (var studentDoc in studentsSnapshot.docs) {
           String studentId = studentDoc.id;
           Map<String, dynamic>? studentData =
-          studentDoc.data() as Map<String, dynamic>?;
+              studentDoc.data() as Map<String, dynamic>?;
 
           if (studentData != null &&
               studentData.containsKey('macAddress') &&
@@ -64,7 +63,7 @@ class ResultsPageState extends State<ResultsPage> {
 
             if (finalGradeDoc.exists) {
               Map<String, dynamic>? finalGradeData =
-              finalGradeDoc.data() as Map<String, dynamic>?;
+                  finalGradeDoc.data() as Map<String, dynamic>?;
 
               if (finalGradeData != null &&
                   finalGradeData.containsKey('score')) {
@@ -83,7 +82,7 @@ class ResultsPageState extends State<ResultsPage> {
               'studentId': studentId,
               'macAddress': macAddress,
               'name': name,
-              'score': score ?? 'No Score',
+              'score': score ?? 0,
             });
           } else {
             print(
@@ -93,8 +92,22 @@ class ResultsPageState extends State<ResultsPage> {
       } else {
         print("No students found in 'Students' collection");
       }
+
+      // Sort the list by score in descending order
+      studentInfoList
+          .sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
     } catch (e) {
       print("Error fetching student info and scores: $e");
+    }
+  }
+
+  Color getCardColor(int index) {
+    if (index == 0) {
+      return Colors.green; // First card green
+    } else if (index == 1) {
+      return Colors.yellow; // Second card yellow
+    } else {
+      return Colors.black; // Other cards black
     }
   }
 
@@ -103,28 +116,56 @@ class ResultsPageState extends State<ResultsPage> {
     // Display the fetched data
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Scores'),
+        title: const Text('Student Scores'),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : studentInfoList.isNotEmpty
-          ? ListView.builder(
-        itemCount: studentInfoList.length,
-        itemBuilder: (context, index) {
-          var studentInfo = studentInfoList[index];
-          return ListTile(
-            title: Text(studentInfo['name']),
-            subtitle:
-            Text('Mac Address: ${studentInfo['macAddress']}'),
-            trailing: Text(
-              'Score: ${studentInfo['score']}',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          );
-        },
-      )
-          : Center(child: Text('No data available')),
+              ? ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: studentInfoList.length,
+                  itemBuilder: (context, index) {
+                    var studentInfo = studentInfoList[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: getCardColor(index),
+                            width: 4.0,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.white,
+                      ),
+                      child: ListTile(
+                        title: Text(studentInfo['name'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle:
+                            Text('Mac Address: ${studentInfo['macAddress']}'),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Score',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              '${studentInfo['score']}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                  color: getCardColor(index)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 8),
+                )
+              : const Center(child: Text('No data available')),
     );
   }
 }

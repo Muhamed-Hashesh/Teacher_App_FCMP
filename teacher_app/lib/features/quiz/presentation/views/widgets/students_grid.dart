@@ -104,7 +104,7 @@ class _StudentGridState extends State<StudentGrid> {
         return GridView.builder(
           padding: EdgeInsets.all(widget.screenWidth * 0.01),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
+            crossAxisCount: 4,
             childAspectRatio: 1,
             crossAxisSpacing: widget.screenWidth * 0.01,
             mainAxisSpacing: widget.screenHeight * 0.01,

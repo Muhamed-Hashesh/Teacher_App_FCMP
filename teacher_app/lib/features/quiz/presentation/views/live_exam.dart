@@ -66,14 +66,14 @@ class _LiveExamState extends State<LiveExam> {
       body: Row(
         children: [
           Expanded(
-            flex: 1,
+            flex: 5,
             child: QuestionCardLiveExam(
               screenWidth: screenWidth,
               screenHeight: screenHeight,
             ),
           ),
           Expanded(
-            flex: 1,
+            flex: 3,
             child: Card(
               elevation: 4.0,
               margin: EdgeInsets.all(screenWidth * 0.01),
