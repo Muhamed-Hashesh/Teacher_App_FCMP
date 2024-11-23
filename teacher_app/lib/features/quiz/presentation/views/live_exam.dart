@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:teacher_app/features/quiz/presentation/views/widgets/quiz_questions.dart';
@@ -11,19 +13,23 @@ class LiveExam extends StatefulWidget {
 }
 
 class _LiveExamState extends State<LiveExam> {
+  late Timer _timer;
+  int _timeElapsed = 0;
+  int _currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    // Set the orientation to landscape mode
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    _startTimer();
   }
 
   @override
   void dispose() {
-    // Reset the orientation to default
+    _timer.cancel();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -31,23 +37,41 @@ class _LiveExamState extends State<LiveExam> {
     super.dispose();
   }
 
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _timeElapsed++;
+      });
+    });
+  }
+
+  void _goToNextQuestion() {
+    setState(() {
+      if (_currentIndex < 9) {
+        _currentIndex++;
+        _timeElapsed = 0;
+      } else {
+        Navigator.pushReplacementNamed(context, '/resultsPage');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final baseFontSize =
-        screenHeight * 0.02; // Base font size relative to screen height
+    final baseFontSize = screenHeight * 0.02;
 
     return Scaffold(
       body: Row(
         children: [
-          // Left Panel in a Card - Question Card
           Expanded(
             flex: 1,
             child: QuestionCardLiveExam(
-                screenWidth: screenWidth, screenHeight: screenHeight),
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+            ),
           ),
-          // Right Panel in a Card - Timer and Students Card
           Expanded(
             flex: 1,
             child: Card(
@@ -55,7 +79,6 @@ class _LiveExamState extends State<LiveExam> {
               margin: EdgeInsets.all(screenWidth * 0.01),
               child: Column(
                 children: [
-                  // Timer and progress bar wrapped in a Card
                   Card(
                     elevation: 0.5,
                     margin: EdgeInsets.only(
@@ -79,7 +102,7 @@ class _LiveExamState extends State<LiveExam> {
                                       size: baseFontSize * 2.6),
                                   SizedBox(width: screenWidth * 0.01),
                                   Text(
-                                    "43s",
+                                    "$_timeElapsed s",
                                     style: TextStyle(
                                         fontSize: baseFontSize * 2.5,
                                         fontWeight: FontWeight.bold),
@@ -103,19 +126,11 @@ class _LiveExamState extends State<LiveExam> {
                               ),
                             ],
                           ),
-                          SizedBox(height: screenHeight * 0.02),
-                          // Horizontal line as progress bar
-                          LinearProgressIndicator(
-                            value: 0.5,
-                            color: Colors.black,
-                            backgroundColor: Colors.grey[300],
-                          ),
                         ],
                       ),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  // Student grid
                   Expanded(
                     child: StudentGrid(
                       screenWidth: screenWidth,

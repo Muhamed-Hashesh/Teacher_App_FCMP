@@ -93,9 +93,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   /// Method triggered when the app is opened or resumed
   void onAppOpen() async {
     log('App opened or resumed!');
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('App opened or resumed!'),
-    ));
     await checkAndCreateSession();
   }
 
