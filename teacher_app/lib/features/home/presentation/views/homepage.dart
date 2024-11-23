@@ -13,12 +13,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => onAppOpen());
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addObserver(this);
+  //   WidgetsBinding.instance.addPostFrameCallback((_) => onAppOpen());
+  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {

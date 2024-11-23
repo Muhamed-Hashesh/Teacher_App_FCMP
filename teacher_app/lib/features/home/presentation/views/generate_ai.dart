@@ -297,8 +297,9 @@ class GeneratePageState extends State<GeneratePage> {
                     if (selectedQuestions.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text(
-                                'Please select at least one question to start the quiz')),
+                          content: Text(
+                              'Please select at least one question to save.'),
+                        ),
                       );
                       return;
                     }
@@ -310,7 +311,7 @@ class GeneratePageState extends State<GeneratePage> {
                     try {
                       final firestore = FirebaseFirestore.instance;
 
-                      // Get the latest SessionID
+                      // Fetch all SessionIDs
                       final sessionsSnapshot =
                           await firestore.collection('Sessions').get();
                       final sessionIDs = sessionsSnapshot.docs
@@ -320,40 +321,50 @@ class GeneratePageState extends State<GeneratePage> {
                               int.tryParse(id.replaceFirst('SessionID', '')))
                           .whereType<int>()
                           .toList();
-                      sessionIDs.sort();
-                      final latestSessionID =
-                          sessionIDs.isNotEmpty ? sessionIDs.last : 0;
 
-                      if (latestSessionID == 0) {
-                        throw Exception('No valid sessions found.');
+                      if (sessionIDs.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('No valid sessions found.')),
+                        );
+                        return;
                       }
 
-                      // Reference to QuestionLists in the latest session
-                      final questionListsCollection = firestore
-                          .collection('Sessions')
-                          .doc('SessionID$latestSessionID')
-                          .collection('QuestionLists');
+                      // Sort session IDs and get the largest
+                      sessionIDs.sort();
+                      final latestSessionID = sessionIDs.last;
 
-                      // Get the current maximum document ID in QuestionLists
+                      // Verify if the session exists
+                      final sessionDoc = firestore
+                          .collection('Sessions')
+                          .doc('SessionID$latestSessionID');
+                      final sessionExists =
+                          await sessionDoc.get().then((doc) => doc.exists);
+
+                      if (!sessionExists) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('The latest session does not exist.')),
+                        );
+                        return;
+                      }
+
+                      // Reference the QuestionLists collection
+                      final questionListsCollection =
+                          sessionDoc.collection('QuestionLists');
+
+                      // **Delete all existing documents in the collection**
                       final existingQuestionsSnapshot =
                           await questionListsCollection.get();
-                      final existingNumbers = existingQuestionsSnapshot.docs
-                          .map((doc) => int.tryParse(doc.id))
-                          .whereType<int>()
-                          .toList();
-                      existingNumbers.sort();
+                      for (var doc in existingQuestionsSnapshot.docs) {
+                        await doc.reference.delete();
+                      }
 
-                      // Determine the next number to start adding new questions
-                      int nextNumber = existingNumbers.isNotEmpty
-                          ? existingNumbers.last + 1
-                          : 1;
-
-                      // Add new questions without replacing existing ones
+                      // Save selected questions starting from document ID 1
                       for (int i = 0; i < selectedQuestions.length; i++) {
                         final question = selectedQuestions[i];
-                        await questionListsCollection
-                            .doc('${nextNumber + i}')
-                            .set({
+                        await questionListsCollection.doc('${i + 1}').set({
                           'A': question['options'][0],
                           'B': question['options'][1],
                           'C': question['options'][2],
@@ -363,11 +374,11 @@ class GeneratePageState extends State<GeneratePage> {
                         });
                       }
 
-                      // Show success message and navigate to LiveExam
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('Questions added successfully!')),
                       );
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => LiveExam()),
@@ -376,8 +387,9 @@ class GeneratePageState extends State<GeneratePage> {
                       debugPrint('Error saving questions to Firebase: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content:
-                                Text('Failed to save questions to Firebase')),
+                          content:
+                              Text('Failed to save questions to Firebase.'),
+                        ),
                       );
                     } finally {
                       setState(() {
@@ -405,6 +417,38 @@ class GeneratePageState extends State<GeneratePage> {
                 ),
               ),
             ),
+            // SizedBox(height: 8),
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: SizedBox(
+            //     width: double.infinity,
+            //     child: ElevatedButton(
+            //       onPressed: () {
+            //         Navigator.push(
+            //           context,
+            //           MaterialPageRoute(builder: (context) => LiveExam()),
+            //         );
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         padding: EdgeInsets.symmetric(vertical: verticalPadding),
+            //         backgroundColor: const Color.fromARGB(255, 1, 151, 168),
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(12),
+            //         ),
+            //       ),
+            //       child: _isLoading
+            //           ? CircularProgressIndicator(color: Colors.white)
+            //           : Text(
+            //               "Start Quiz",
+            //               style: TextStyle(
+            //                 color: Colors.white,
+            //                 fontSize: buttonFontSize,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //     ),
+            //   ),
+            // ),
             if (_manuallyAddedQuestions.isNotEmpty) ...[
               SizedBox(height: verticalPadding * 2),
               Text(

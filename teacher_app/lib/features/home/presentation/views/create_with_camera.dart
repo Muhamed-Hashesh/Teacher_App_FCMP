@@ -293,7 +293,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                             question: questions[index],
                             options: answers[index],
                             correctAnswer: correctAnswers[index],
-                            questionNumber: index + 1,
+                            questionNumber: index,
                             onSelectionChanged: (bool value) {});
                       },
                     ),
@@ -323,7 +323,7 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                     try {
                       final firestore = FirebaseFirestore.instance;
 
-                      // 1. Fetch the latest SessionID
+                      // 1. Fetch all existing SessionIDs
                       final sessionsSnapshot =
                           await firestore.collection('Sessions').get();
                       final sessionIDs = sessionsSnapshot.docs
@@ -333,39 +333,26 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                               int.tryParse(id.replaceFirst('SessionID', '')))
                           .whereType<int>()
                           .toList();
-                      sessionIDs.sort();
+                      sessionIDs.sort(); // Sort SessionIDs in ascending order
 
-                      final latestSessionID =
-                          sessionIDs.isNotEmpty ? sessionIDs.last : 0;
+                      // 2. Determine the next SessionID
+                      int nextSessionID =
+                          sessionIDs.isNotEmpty ? sessionIDs.last + 1 : 1;
 
-                      if (latestSessionID == 0) {
-                        throw Exception('No valid sessions found.');
-                      }
-
-                      // 2. Reference the QuestionLists subcollection of the latest session
-                      final questionListsCollection = firestore
+                      // 3. Create a new session document
+                      final newSessionDoc = firestore
                           .collection('Sessions')
-                          .doc('SessionID$latestSessionID')
-                          .collection('QuestionLists');
+                          .doc('SessionID$nextSessionID');
+                      await newSessionDoc
+                          .set({}); // Create the new session document
 
-                      // 3. Determine the next available number for new questions
-                      final existingQuestionsSnapshot =
-                          await questionListsCollection.get();
-                      final existingNumbers = existingQuestionsSnapshot.docs
-                          .map((doc) => int.tryParse(doc.id))
-                          .whereType<int>()
-                          .toList();
-                      existingNumbers.sort();
+                      // 4. Reference the QuestionLists collection in the new session
+                      final questionListsCollection =
+                          newSessionDoc.collection('QuestionLists');
 
-                      int nextNumber = existingNumbers.isNotEmpty
-                          ? existingNumbers.last + 1
-                          : 1;
-
-                      // 4. Save questions with unique IDs starting from `nextNumber`
+                      // 5. Save questions with sequential numbers starting from 1
                       for (int i = 0; i < questions.length; i++) {
-                        await questionListsCollection
-                            .doc('${nextNumber + i}')
-                            .set({
+                        await questionListsCollection.doc('${i + 1}').set({
                           'question_name': questions[i],
                           'A': answers[i].length > 0 ? answers[i][0] : '',
                           'B': answers[i].length > 1 ? answers[i][1] : '',
@@ -375,10 +362,16 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                         });
                       }
 
-                      // 5. Navigate to LiveExam after successful data save
+                      // 6. Navigate to LiveExam after successful data save
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => LiveExam()),
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'SessionID$nextSessionID created successfully!')),
                       );
                     } catch (e) {
                       debugPrint('Error saving questions to Firebase: $e');
