@@ -178,6 +178,7 @@ class _LiveExamState extends State<LiveExam> {
                     onIndexChanged: (newIndex) {
                       setState(() {
                         _currentIndex = newIndex;
+                        _timeElapsed = 0;
                       });
                     },
                   ),
