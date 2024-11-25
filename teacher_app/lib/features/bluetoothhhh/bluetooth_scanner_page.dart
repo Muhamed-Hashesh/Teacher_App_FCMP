@@ -5,8 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-import 'data_display_page.dart';
+import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 
 class BluetoothScannerPage extends StatefulWidget {
   const BluetoothScannerPage({super.key});
@@ -90,7 +89,7 @@ class BluetoothScannerPageState extends State<BluetoothScannerPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => DataDisplayPage(
+        builder: (context) => LiveExam(
           ble: _ble,
           deviceId: deviceId,
         ),

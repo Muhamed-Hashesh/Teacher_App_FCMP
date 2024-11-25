@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:teacher_app/features/home/presentation/views/camera_page.dart';
-import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 
@@ -363,10 +362,10 @@ class CreateWithCameraPageState extends State<CreateWithCameraPage> {
                       }
 
                       // 6. Navigate to LiveExam after successful data save
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LiveExam()),
-                      );
+                      // Navigator.push(
+                      // context,
+                      // MaterialPageRoute(builder: (context) => LiveExam()),
+                      // );
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

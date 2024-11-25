@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:teacher_app/features/bluetoothhhh/bluetooth_scanner_page.dart';
 import 'package:teacher_app/features/home/presentation/data/question_generator.dart';
 import 'package:teacher_app/features/home/presentation/views/widgets/manual_dialog.dart';
-import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
 
@@ -381,7 +381,8 @@ class GeneratePageState extends State<GeneratePage> {
 
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => LiveExam()),
+                        MaterialPageRoute(
+                            builder: (context) => BluetoothScannerPage()),
                       );
                     } catch (e) {
                       debugPrint('Error saving questions to Firebase: $e');

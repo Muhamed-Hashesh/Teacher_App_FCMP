@@ -9,11 +9,13 @@ import 'result_page.dart';
 class DataDisplayPage extends StatefulWidget {
   final FlutterReactiveBle ble;
   final String deviceId;
+  int? currentIndex;
 
-  const DataDisplayPage({
+  DataDisplayPage({
     super.key,
     required this.ble,
     required this.deviceId,
+    this.currentIndex = 1,
   });
 
   @override
@@ -31,7 +33,6 @@ class DataDisplayPageState extends State<DataDisplayPage> {
   String _receivedData = "No value yet";
   String? mac = "";
   String? answer = "";
-  int _currentIndex = 1;
 
   bool _isConnected = false;
 
@@ -121,7 +122,7 @@ class DataDisplayPageState extends State<DataDisplayPage> {
             .collection('responses')
             .doc(mac)
             .collection('questions_id')
-            .doc(_currentIndex.toString());
+            .doc(widget.currentIndex.toString());
 
         // Data to be saved
         Map<String, dynamic> data = {
@@ -130,11 +131,11 @@ class DataDisplayPageState extends State<DataDisplayPage> {
 
         // Write data to Firestore
         await docRef.set(data);
-        print("Data written to Firestore at index $_currentIndex.");
+        print("Data written to Firestore at index ${widget.currentIndex}.");
 
         // Increment the index for the next entry
         setState(() {
-          _currentIndex++;
+          widget.currentIndex = widget.currentIndex! + 1;
         });
       } catch (e) {
         print("Error writing to Firestore: $e");

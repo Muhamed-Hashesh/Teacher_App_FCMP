@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
 import 'package:teacher_app/widgets/custombutton.dart';
 import 'package:teacher_app/widgets/manual_question_form.dart';
 import 'package:teacher_app/widgets/upload_file_button.dart';
@@ -574,12 +573,12 @@ class _YourQuestionListsPageState extends State<YourQuestionListsPage> {
                   child: ReusableButton(
                     label: "Start Quiz",
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) => const LiveExam(),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (BuildContext context) => const LiveExam(),
+                      //   ),
+                      // );
                     },
                     backgroundColor: const Color.fromARGB(255, 1, 151, 168),
                     textColor: Colors.white,

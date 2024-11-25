@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class QuestionCardLiveExam extends StatefulWidget {
   final double screenWidth;
   final double screenHeight;
+  final ValueChanged<int> onIndexChanged;
 
   const QuestionCardLiveExam({
     super.key,
     required this.screenWidth,
     required this.screenHeight,
+    required this.onIndexChanged,
   });
 
   @override
@@ -83,6 +85,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
       setState(() {
         _currentIndex++;
       });
+      widget.onIndexChanged(_currentIndex); // Notify the parent widget
     }
   }
 

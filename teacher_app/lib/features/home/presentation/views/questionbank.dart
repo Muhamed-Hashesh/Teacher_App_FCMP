@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:teacher_app/features/quiz/presentation/views/live_exam.dart';
-import 'package:teacher_app/widgets/custombutton.dart';
-import 'package:teacher_app/widgets/customdropdown.dart';
 import 'package:teacher_app/utils/quistions_ai.dart';
 import 'package:teacher_app/widgets/ai_generated_question.dart';
+import 'package:teacher_app/widgets/custombutton.dart';
+import 'package:teacher_app/widgets/customdropdown.dart';
 
 class QuestionBankPage extends StatefulWidget {
   const QuestionBankPage({super.key});
@@ -52,84 +51,91 @@ class _QuestionBankPageState extends State<QuestionBankPage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Reusable Dropdown for selecting unit with label
+              ReusableDropdown(
+                label: "Choose a unit     ",
+                items: _units,
+                selectedItem: _selectedUnit,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedUnit = newValue;
+                  });
+                },
+                hint: 'Choose a unit',
+              ),
+              const SizedBox(height: 17),
 
-           Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Reusable Dropdown for selecting lesson with label
+              ReusableDropdown(
+                label: "Choose a lesson",
+                items: _lessons,
+                selectedItem: _selectedLesson,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedLesson = newValue;
+                  });
+                },
+                hint: 'Choose a lesson',
+              ),
+              const SizedBox(height: 24),
+
+              // Reusable Search Button
+              Center(
+                child: ReusableButton(
+                  label: "Search",
+                  onPressed: () {
+                    // Handle search action
+                  },
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Reusable Add using AI and Add Manually Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Reusable Dropdown for selecting unit with label
-                  ReusableDropdown(
-                    label: "Choose a unit     ",
-                    items: _units,
-                    selectedItem: _selectedUnit,
-                    onChanged: (String? newValue) {
+                  ReusableButton(
+                    label: "Add using AI",
+                    onPressed: () {
                       setState(() {
-                        _selectedUnit = newValue;
+                        generateQuestions = true;
                       });
-                    }, hint: 'Choose a unit',
+                    },
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
                   ),
-                  const SizedBox(height: 17),
-
-                  // Reusable Dropdown for selecting lesson with label
-                  ReusableDropdown(
-                    label: "Choose a lesson",
-                    items: _lessons,
-                    selectedItem: _selectedLesson,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedLesson = newValue;
-                      });
-                    }, hint: 'Choose a lesson',
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Reusable Search Button
-                  Center(
-                    child: ReusableButton(
-                      label: "Search",
-                      onPressed: () {
-                        // Handle search action
-                      },
-                      backgroundColor: Colors.white,
-                      textColor: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Reusable Add using AI and Add Manually Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ReusableButton(
-                        label: "Add using AI",
-                        onPressed: () {
-                          setState(() {
-                            generateQuestions = true;
-                          });
-                        },
-                        backgroundColor: Colors.white,
-                        textColor: Colors.black,
-                      ),
-                      const SizedBox(width: 16), // Space between the buttons
-                      ReusableButton(
-                        label: "Add Manually",
-                        onPressed: () {
-                          // Handle add manually action
-                        },
-                        backgroundColor: Colors.white,
-                        textColor: Colors.black,
-                      ),
-                    ],
+                  const SizedBox(width: 16), // Space between the buttons
+                  ReusableButton(
+                    label: "Add Manually",
+                    onPressed: () {
+                      // Handle add manually action
+                    },
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
                   ),
                 ],
               ),
+            ],
+          ),
 
-
-
-          ... generateQuestions ? List.generate(aiQuestionsList.length, (index) {
-            final question = aiQuestionsList[index];
-            final options = question['options'] as List<String>;
-            return AiGeneratedQuestion(question: question['question'], options: options, correctAnswer: question['correctAnswer'], questionNumber: index, onSelectionChanged: (bool value) {  },);
-          }) : [],
+          ...generateQuestions
+              ? List.generate(aiQuestionsList.length, (index) {
+                  final question = aiQuestionsList[index];
+                  final options = question['options'] as List<String>;
+                  return AiGeneratedQuestion(
+                    question: question['question'],
+                    options: options,
+                    correctAnswer: question['correctAnswer'],
+                    questionNumber: index,
+                    onSelectionChanged: (bool value) {},
+                  );
+                })
+              : [],
 
           // Reusable Start Button at the bottom
           Padding(
@@ -137,10 +143,10 @@ class _QuestionBankPageState extends State<QuestionBankPage> {
             child: ReusableButton(
               label: "Start Quiz",
               onPressed: () {
-                    Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => LiveExam()));
+                // Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //           builder: (BuildContext context) => LiveExam()));
               },
               backgroundColor: const Color.fromARGB(255, 1, 151, 168),
               textColor: Colors.white,
@@ -153,4 +159,3 @@ class _QuestionBankPageState extends State<QuestionBankPage> {
     );
   }
 }
-
