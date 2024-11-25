@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:teacher_app/features/bluetoothhhh/nov_to_scan_bage.dart';
 import 'package:teacher_app/quiz_reports.dart';
 
 import '../../../create_session_page/presentation/views/createsessionpage.dart';
@@ -107,10 +106,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     const Center(
         child: Text('Chat Page',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
-    // const Center(
-    //     child: Text('Question Page',
-    //         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
-    NavToScanPage(),
+    const Center(
+        child: Text('Question Page',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+    // NavToScanPage(),
     const CreateSessionPage(),
     const QuizReportsPage(),
     const Center(

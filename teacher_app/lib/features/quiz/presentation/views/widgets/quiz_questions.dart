@@ -25,14 +25,13 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
   @override
   void initState() {
     super.initState();
-    _fetchQuestions(); // Fetch questions when the widget is initialized
+    _fetchQuestions();
   }
 
   Future<void> _fetchQuestions() async {
     try {
       final firestore = FirebaseFirestore.instance;
 
-      // Fetch all SessionIDs
       final sessionsSnapshot = await firestore.collection('Sessions').get();
       final sessionIDs = sessionsSnapshot.docs
           .map((doc) => doc.id)
@@ -40,13 +39,12 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
           .map((id) => int.tryParse(id.replaceFirst('SessionID', '')))
           .whereType<int>()
           .toList();
-      sessionIDs.sort(); // Sort the IDs to find the biggest
+      sessionIDs.sort();
 
       if (sessionIDs.isEmpty) {
         throw Exception('No SessionIDs found.');
       }
 
-      // Get the biggest SessionID
       final biggestSessionID = sessionIDs.last;
       final questionListsCollection = firestore
           .collection('Sessions')
@@ -72,7 +70,6 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
         _selectedOptions = List<int?>.filled(questions.length, null);
       });
     } catch (e) {
-      // Handle errors
       setState(() {
         _questions = [];
       });
@@ -85,7 +82,7 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
       setState(() {
         _currentIndex++;
       });
-      widget.onIndexChanged(_currentIndex); // Notify the parent widget
+      widget.onIndexChanged(_currentIndex);
     }
   }
 
@@ -94,12 +91,10 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
     final baseFontSize = widget.screenHeight * 0.02;
 
     if (_questions == null) {
-      // Show loading indicator while fetching
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_questions!.isEmpty) {
-      // Show error or empty state
       return const Center(child: Text("No questions available"));
     }
 
@@ -149,7 +144,6 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                   ),
                   child: Row(
                     children: [
-                      // Letter Prefix
                       SizedBox(width: 8),
                       Text(
                         letterPrefix,
@@ -160,8 +154,6 @@ class _QuestionCardLiveExamState extends State<QuestionCardLiveExam> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Space between letter and option
-                      // Option Text
                       Expanded(
                         child: Text(
                           options[index],

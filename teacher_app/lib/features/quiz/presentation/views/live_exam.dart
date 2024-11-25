@@ -106,7 +106,6 @@ class _LiveExamState extends State<LiveExam> {
         });
         print("Received data: $_receivedData");
 
-        // Update Firestore with the received data
         _updateFirestore();
       },
       onError: (error) {
@@ -119,7 +118,6 @@ class _LiveExamState extends State<LiveExam> {
   void _updateFirestore() async {
     if (mac != null && answer != null) {
       try {
-        // Build the document reference
         DocumentReference docRef = FirebaseFirestore.instance
             .collection('Sessions')
             .doc('SessionID1')
@@ -128,12 +126,10 @@ class _LiveExamState extends State<LiveExam> {
             .collection('questions_id')
             .doc((_currentIndex + 1).toString());
 
-        // Data to be saved
         Map<String, dynamic> data = {
           'answer': answer,
         };
 
-        // Write data to Firestore (update if the document already exists)
         await docRef.set(data, SetOptions(merge: true));
         print("Data written to Firestore at index ${_currentIndex + 1}.");
       } catch (e) {
@@ -163,17 +159,6 @@ class _LiveExamState extends State<LiveExam> {
       });
     });
   }
-
-  // void goToNextQuestion() {
-  //   setState(() {
-  //     if (_currentIndex < 9) {
-  //       _currentIndex++;
-  //       _timeElapsed = 0;
-  //     } else {
-  //       Navigator.pushReplacementNamed(context, '/resultsPage');
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
